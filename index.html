@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Japanese Vocabulary Quiz</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #e3f2fd 0%, #c5cae9 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .upload-area:hover {
+            border-color: #2196f3;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary {
+            background: #2196f3;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1976d2;
+        }
+
+        .btn-success {
+            background: #4caf50;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #45a049;
+        }
+
+        .btn-secondary {
+            background: #666;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #555;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #2196f3;
+            transition: width 0.3s;
+        }
+
+        .question-context {
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+
+        .answers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .answer-btn {
+            padding: 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+            font-size: 16px;
+        }
+
+        .answer-btn:hover {
+            border-color: #2196f3;
+            background: #e3f2fd;
+        }
+
+        .answer-btn.correct {
+            border-color: #4caf50;
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+
+        .answer-btn.incorrect {
+            border-color: #f44336;
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .answer-btn.disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .score-display {
+            text-align: center;
+            font-size: 4rem;
+            font-weight: bold;
+            color: #2196f3;
+            margin: 20px 0;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mb-20 {
+            margin-bottom: 20px;
+        }
+
+        .success-msg {
+            color: #4caf50;
+            font-weight: 600;
+        }
+
+        .config-note {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #856404;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="card">
+            <h1 class="title">🇯🇵 Japanese Vocabulary Quiz</h1>
+
+            <!-- Configuration Note -->
+            <!-- <div class="config-note">
+                <strong>📝 Setup Instructions:</strong><br>
+                1. Change the filename in the code: Look for <code>const CSV_FILENAME = "vocabulary.csv";</code><br>
+                2. Put your CSV file in the same folder as this HTML file<br>
+                3. Refresh the page - your quiz will load automatically!
+            </div> -->
+
+            <!-- File Loading Section -->
+            <div id="loadingSection">
+                <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                    <div style="font-size: 48px; margin-bottom: 10px;">📤</div>
+                    <div style="font-size: 18px; font-weight: 600; margin-bottom: 10px;">Upload your CSV file</div>
+                    <p style="color: #666;">CSV should contain: Hiragana, Romaji, Meaning, Example 1 JP, Example 1 EN,
+                        Example 2 JP, Example 2 EN</p>
+                    <input type="file" id="fileInput" accept=".csv" style="display: none;"
+                        onchange="handleFileUpload(event)">
+                </div>
+            </div>
+
+            <!-- Quiz Status -->
+            <div id="quizStatus" class="text-center hidden">
+                <p class="success-msg mb-20" id="statusText"></p>
+
+                <!-- Question Count Selection -->
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #333;">
+                        Number of Questions:
+                    </label>
+                    <select id="questionCount"
+                        style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; min-width: 120px;">
+                        <option value="5">5 questions</option>
+                        <option value="10" selected>10 questions</option>
+                        <option value="15">15 questions</option>
+                        <option value="20">20 questions</option>
+                        <option value="25">25 questions</option>
+                        <option value="30">30 questions</option>
+                        <option value="50">50 questions</option>
+                        <option value="all">All entries</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-success" onclick="startQuiz()">
+                    ▶️ Start Quiz
+                </button>
+            </div>
+
+            <!-- Quiz Complete -->
+            <div id="quizComplete" class="text-center hidden">
+                <h2 style="margin-bottom: 20px;">Quiz Complete! 🎉</h2>
+                <div class="score-display" id="finalScore"></div>
+                <p id="percentageText" style="font-size: 18px; margin-bottom: 30px;"></p>
+                <div>
+                    <button class="btn btn-success" onclick="startQuiz()" style="margin-right: 10px;">Take Quiz
+                        Again</button>
+                    <button class="btn btn-secondary" onclick="resetQuiz()">🔄 Upload New CSV</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question Card -->
+        <div id="questionCard" class="card hidden">
+            <!-- Progress -->
+            <div class="quiz-header">
+                <div id="questionProgress">Question 1 of 10</div>
+                <div id="scoreProgress">Score: 0/0</div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 10%"></div>
+            </div>
+
+            <!-- Question Content -->
+            <div style="margin-bottom: 30px;">
+                <h2 id="questionText" style="margin-bottom: 20px; font-size: 24px;"></h2>
+                <div id="questionContext" class="question-context"></div>
+            </div>
+
+            <!-- Answer Options -->
+            <div id="answersContainer" class="answers-grid"></div>
+
+            <!-- Next Button -->
+            <div id="nextButtonContainer" class="text-center hidden">
+                <button class="btn btn-primary" onclick="handleNextQuestion()" id="nextButton">Next Question</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== CHANGE THIS TO YOUR CSV FILENAME =====
+        const CSV_FILENAME = "Vocabulary.csv";  // 👈 EDIT THIS!
+
+        // Global variables
+        let csvData = [];
+        let currentQuestion = null;
+        let selectedAnswer = null;
+        let showResult = false;
+        let score = 0;
+        let questionCount = 0;
+        let totalQuestions = 10;
+        let isQuizStarted = false;
+        let quizComplete = false;
+
+        const questionTypes = [
+            { type: 'hiragana', question: 'What is the Hiragana for this?', answerKey: 'Hiragana' },
+            { type: 'romaji', question: 'What is the Romaji for this?', answerKey: 'Romaji' },
+            { type: 'meaning', question: 'What is the meaning?', answerKey: 'Meaning' }
+        ];
+
+        // Try to load the hardcoded CSV file on page load
+        window.addEventListener('load', async () => {
+            console.log(`Trying to load: ${CSV_FILENAME}`);
+            try {
+                const response = await fetch(CSV_FILENAME);
+                if (response.ok) {
+                    const text = await response.text();
+                    parseCSV(text, CSV_FILENAME);
+                } else {
+                    console.log(`Could not find ${CSV_FILENAME}, showing upload option`);
+                }
+            } catch (error) {
+                console.log(`Could not load ${CSV_FILENAME}, showing upload option`);
+            }
+        });
+
+        function parseCSV(text, filename = 'uploaded file') {
+            try {
+                const result = Papa.parse(text, {
+                    header: true,
+                    skipEmptyLines: true,
+                    dynamicTyping: false,
+                    delimitersToGuess: [',', '\t', '|', ';']
+                });
+
+                // Clean headers by trimming whitespace
+                const cleanedData = result.data.map(row => {
+                    const cleanedRow = {};
+                    Object.keys(row).forEach(key => {
+                        const cleanKey = key.trim();
+                        cleanedRow[cleanKey] = row[key];
+                    });
+                    return cleanedRow;
+                });
+
+                csvData = cleanedData;
+                console.log('CSV loaded:', csvData.length, 'entries from', filename);
+
+                // Show quiz status
+                document.getElementById('loadingSection').classList.add('hidden');
+                document.getElementById('quizStatus').classList.remove('hidden');
+                document.getElementById('statusText').textContent = `✅ CSV loaded: ${filename} (${csvData.length} entries)`;
+
+                // Set default question count based on data size
+                const questionCountSelect = document.getElementById('questionCount');
+                if (csvData.length <= 10) {
+                    questionCountSelect.value = 'all';
+                } else if (csvData.length <= 20) {
+                    questionCountSelect.value = '10';
+                } else {
+                    questionCountSelect.value = '15';
+                }
+
+            } catch (error) {
+                console.error('Error parsing CSV:', error);
+                alert('Error parsing CSV file. Please check the format.');
+            }
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                parseCSV(e.target.result, file.name);
+            };
+            reader.readAsText(file);
+        }
+
+        function generateQuestion() {
+            if (csvData.length < 4) return null;
+
+            // Pick a random correct answer
+            const correctIndex = Math.floor(Math.random() * csvData.length);
+            const correctRow = csvData[correctIndex];
+
+            // Pick a random question type
+            const questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
+
+            // Generate wrong answers from other rows
+            const wrongAnswers = [];
+            const usedIndices = new Set([correctIndex]);
+
+            while (wrongAnswers.length < 3) {
+                const randomIndex = Math.floor(Math.random() * csvData.length);
+                if (!usedIndices.has(randomIndex)) {
+                    wrongAnswers.push(csvData[randomIndex][questionType.answerKey]);
+                    usedIndices.add(randomIndex);
+                }
+            }
+
+            // Mix correct and wrong answers
+            const allAnswers = [correctRow[questionType.answerKey], ...wrongAnswers];
+            const shuffledAnswers = allAnswers.sort(() => Math.random() - 0.5);
+
+            // Generate question context
+            let questionContext = '';
+            if (questionType.type === 'hiragana') {
+                questionContext = `Romaji: ${correctRow.Romaji}\nMeaning: ${correctRow.Meaning}`;
+            } else if (questionType.type === 'romaji') {
+                questionContext = `Hiragana: ${correctRow.Hiragana}\nMeaning: ${correctRow.Meaning}`;
+            } else {
+                questionContext = `Hiragana: ${correctRow.Hiragana}\nRomaji: ${correctRow.Romaji}`;
+            }
+
+            // Add examples if available
+            if (correctRow['Example 1 JP'] && correctRow['Example 1 EN']) {
+                questionContext += `\n\nExample: ${correctRow['Example 1 JP']} (${correctRow['Example 1 EN']})`;
+            }
+
+            return {
+                questionText: questionType.question,
+                context: questionContext,
+                answers: shuffledAnswers,
+                correctAnswer: correctRow[questionType.answerKey],
+                correctRow: correctRow
+            };
+        }
+
+        function startQuiz() {
+            if (csvData.length < 4) {
+                alert('Please upload a CSV file with at least 4 entries to start the quiz.');
+                return;
+            }
+
+            // Get selected question count
+            const questionCountSelect = document.getElementById('questionCount');
+            const selectedCount = questionCountSelect.value;
+
+            if (selectedCount === 'all') {
+                totalQuestions = csvData.length;
+            } else {
+                totalQuestions = Math.min(parseInt(selectedCount), csvData.length);
+            }
+
+            console.log(`Starting quiz with ${totalQuestions} questions`);
+
+            isQuizStarted = true;
+            questionCount = 0;
+            score = 0;
+            quizComplete = false;
+
+            // Hide other sections
+            document.getElementById('quizStatus').classList.add('hidden');
+            document.getElementById('quizComplete').classList.add('hidden');
+            document.getElementById('questionCard').classList.remove('hidden');
+
+            nextQuestion();
+        }
+
+        function nextQuestion() {
+            currentQuestion = generateQuestion();
+            selectedAnswer = null;
+            showResult = false;
+
+            // Update UI
+            document.getElementById('questionText').textContent = currentQuestion.questionText;
+            document.getElementById('questionContext').textContent = currentQuestion.context;
+            document.getElementById('questionProgress').textContent = `Question ${questionCount + 1} of ${totalQuestions}`;
+            document.getElementById('scoreProgress').textContent = `Score: ${score}/${questionCount}`;
+            document.getElementById('progressFill').style.width = `${((questionCount + 1) / totalQuestions) * 100}%`;
+
+            // Create answer buttons
+            const container = document.getElementById('answersContainer');
+            container.innerHTML = '';
+
+            currentQuestion.answers.forEach((answer, index) => {
+                const button = document.createElement('button');
+                button.className = 'answer-btn';
+                button.textContent = answer;
+                button.onclick = () => handleAnswerSelect(answer, button);
+                container.appendChild(button);
+            });
+
+            document.getElementById('nextButtonContainer').classList.add('hidden');
+        }
+
+        function handleAnswerSelect(answer, buttonElement) {
+            if (showResult) return;
+
+            selectedAnswer = answer;
+            showResult = true;
+
+            if (answer === currentQuestion.correctAnswer) {
+                score++;
+                buttonElement.classList.add('correct');
+                buttonElement.innerHTML = '✅ ' + answer;
+            } else {
+                buttonElement.classList.add('incorrect');
+                buttonElement.innerHTML = '❌ ' + answer;
+
+                // Highlight correct answer
+                const buttons = document.querySelectorAll('.answer-btn');
+                buttons.forEach(btn => {
+                    if (btn.textContent === currentQuestion.correctAnswer) {
+                        btn.classList.add('correct');
+                        btn.innerHTML = '✅ ' + btn.textContent;
+                    }
+                });
+            }
+
+            // Disable all buttons
+            const buttons = document.querySelectorAll('.answer-btn');
+            buttons.forEach(btn => {
+                btn.classList.add('disabled');
+                btn.onclick = null;
+            });
+
+            document.getElementById('nextButtonContainer').classList.remove('hidden');
+        }
+
+        function handleNextQuestion() {
+            questionCount++;
+
+            if (questionCount >= totalQuestions) {
+                finishQuiz();
+            } else {
+                nextQuestion();
+            }
+        }
+
+        function finishQuiz() {
+            quizComplete = true;
+            isQuizStarted = false;
+
+            // Hide question card
+            document.getElementById('questionCard').classList.add('hidden');
+
+            // Show results
+            document.getElementById('quizComplete').classList.remove('hidden');
+            document.getElementById('finalScore').textContent = `${score}/${totalQuestions}`;
+            document.getElementById('percentageText').textContent = `You scored ${Math.round((score / totalQuestions) * 100)}%!`;
+        }
+
+        function resetQuiz() {
+            csvData = [];
+            isQuizStarted = false;
+            quizComplete = false;
+            currentQuestion = null;
+            selectedAnswer = null;
+            showResult = false;
+            score = 0;
+            questionCount = 0;
+
+            // Show loading section
+            document.getElementById('loadingSection').classList.remove('hidden');
+            document.getElementById('quizStatus').classList.add('hidden');
+            document.getElementById('quizComplete').classList.add('hidden');
+            document.getElementById('questionCard').classList.add('hidden');
+
+            // Reset file input
+            document.getElementById('fileInput').value = '';
+        }
+    </script>
+</body>
+
+</html>
