@@ -189,12 +189,64 @@
         }
 
         .config-note {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
+            background: #e3f2fd;
+            border: 1px solid #90caf9;
             border-radius: 8px;
             padding: 15px;
             margin-bottom: 20px;
-            color: #856404;
+            color: #1565c0;
+        }
+
+        .file-selector {
+            margin-bottom: 20px;
+        }
+
+        .file-selector label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .file-selector select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .file-selector select:hover {
+            border-color: #2196f3;
+        }
+
+        .file-selector select:focus {
+            outline: none;
+            border-color: #2196f3;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 20px 0;
+            color: #999;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .divider span {
+            padding: 0 10px;
+            font-weight: 600;
         }
     </style>
 </head>
@@ -204,19 +256,31 @@
         <div class="card">
             <h1 class="title">🇯🇵 Japanese Vocabulary Quiz</h1>
 
-            <!-- Configuration Note -->
-            <!-- <div class="config-note">
-                <strong>📝 Setup Instructions:</strong><br>
-                1. Change the filename in the code: Look for <code>const CSV_FILENAME = "vocabulary.csv";</code><br>
-                2. Put your CSV file in the same folder as this HTML file<br>
-                3. Refresh the page - your quiz will load automatically!
-            </div> -->
+            <div class="config-note">
+                <strong>📝 How to add your CSV files:</strong><br>
+                Edit the <code>availableCSVFiles</code> array in the code to list your CSV files.
+            </div>
 
-            <!-- File Loading Section -->
+            <!-- File Selection Section -->
             <div id="loadingSection">
+                <!-- Select from available files -->
+                <div class="file-selector">
+                    <label for="csvFileSelect">📁 Select a CSV file:</label>
+                    <select id="csvFileSelect">
+                        <option value="">-- Choose a file --</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-primary" onclick="loadSelectedFile()" style="width: 100%; margin-bottom: 15px;">
+                    Load Selected File
+                </button>
+
+                <div class="divider"><span>OR</span></div>
+
+                <!-- Upload custom file -->
                 <div class="upload-area" onclick="document.getElementById('fileInput').click()">
                     <div style="font-size: 48px; margin-bottom: 10px;">📤</div>
-                    <div style="font-size: 18px; font-weight: 600; margin-bottom: 10px;">Upload your CSV file</div>
+                    <div style="font-size: 18px; font-weight: 600; margin-bottom: 10px;">Upload your own CSV file</div>
                     <p style="color: #666;">CSV should contain: Hiragana, Romaji, Meaning, Example 1 JP, Example 1 EN,
                         Example 2 JP, Example 2 EN</p>
                     <input type="file" id="fileInput" accept=".csv" style="display: none;"
@@ -259,7 +323,7 @@
                 <div>
                     <button class="btn btn-success" onclick="startQuiz()" style="margin-right: 10px;">Take Quiz
                         Again</button>
-                    <button class="btn btn-secondary" onclick="resetQuiz()">🔄 Upload New CSV</button>
+                    <button class="btn btn-secondary" onclick="resetQuiz()">🔄 Choose Different CSV</button>
                 </div>
             </div>
         </div>
@@ -294,8 +358,14 @@
     </div>
 
     <script>
-        // ===== CHANGE THIS TO YOUR CSV FILENAME =====
-        const CSV_FILENAME = "Vocabulary.csv";  // 👈 EDIT THIS!
+        // ===== ADD YOUR CSV FILES HERE =====
+        const availableCSVFiles = [
+            { name: "Basic Vocabulary N5", filename: "Vocabulary.csv" },
+            { name: "Hira Kata", filename: "hirakata.csv" }
+            // { name: "JLPT N4", filename: "jlpt_n4.csv" },
+            // { name: "Common Phrases", filename: "phrases.csv" },
+            // Add more files here following the same pattern
+        ];
 
         // Global variables
         let csvData = [];
@@ -314,21 +384,39 @@
             { type: 'meaning', question: 'What is the meaning?', answerKey: 'Meaning' }
         ];
 
-        // Try to load the hardcoded CSV file on page load
-        window.addEventListener('load', async () => {
-            console.log(`Trying to load: ${CSV_FILENAME}`);
+        // Populate dropdown on page load
+        window.addEventListener('load', () => {
+            const select = document.getElementById('csvFileSelect');
+            availableCSVFiles.forEach(file => {
+                const option = document.createElement('option');
+                option.value = file.filename;
+                option.textContent = file.name;
+                select.appendChild(option);
+            });
+        });
+
+        async function loadSelectedFile() {
+            const select = document.getElementById('csvFileSelect');
+            const filename = select.value;
+
+            if (!filename) {
+                alert('Please select a CSV file first!');
+                return;
+            }
+
             try {
-                const response = await fetch(CSV_FILENAME);
+                const response = await fetch(filename);
                 if (response.ok) {
                     const text = await response.text();
-                    parseCSV(text, CSV_FILENAME);
+                    const selectedName = select.options[select.selectedIndex].text;
+                    parseCSV(text, selectedName);
                 } else {
-                    console.log(`Could not find ${CSV_FILENAME}, showing upload option`);
+                    alert(`Could not load ${filename}. Make sure the file is in the same directory as this HTML file.`);
                 }
             } catch (error) {
-                console.log(`Could not load ${CSV_FILENAME}, showing upload option`);
+                alert(`Error loading ${filename}: ${error.message}\n\nMake sure the file is in the same directory as this HTML file.`);
             }
-        });
+        }
 
         function parseCSV(text, filename = 'uploaded file') {
             try {
@@ -387,14 +475,11 @@
         function generateQuestion() {
             if (csvData.length < 4) return null;
 
-            // Pick a random correct answer
             const correctIndex = Math.floor(Math.random() * csvData.length);
             const correctRow = csvData[correctIndex];
 
-            // Pick a random question type
             const questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
 
-            // Generate wrong answers from other rows
             const wrongAnswers = [];
             const usedIndices = new Set([correctIndex]);
 
@@ -406,11 +491,9 @@
                 }
             }
 
-            // Mix correct and wrong answers
             const allAnswers = [correctRow[questionType.answerKey], ...wrongAnswers];
             const shuffledAnswers = allAnswers.sort(() => Math.random() - 0.5);
 
-            // Generate question context
             let questionContext = '';
             if (questionType.type === 'hiragana') {
                 questionContext = `Romaji: ${correctRow.Romaji}\nMeaning: ${correctRow.Meaning}`;
@@ -420,7 +503,6 @@
                 questionContext = `Hiragana: ${correctRow.Hiragana}\nRomaji: ${correctRow.Romaji}`;
             }
 
-            // Add examples if available
             if (correctRow['Example 1 JP'] && correctRow['Example 1 EN']) {
                 questionContext += `\n\nExample: ${correctRow['Example 1 JP']} (${correctRow['Example 1 EN']})`;
             }
@@ -440,7 +522,6 @@
                 return;
             }
 
-            // Get selected question count
             const questionCountSelect = document.getElementById('questionCount');
             const selectedCount = questionCountSelect.value;
 
@@ -457,7 +538,6 @@
             score = 0;
             quizComplete = false;
 
-            // Hide other sections
             document.getElementById('quizStatus').classList.add('hidden');
             document.getElementById('quizComplete').classList.add('hidden');
             document.getElementById('questionCard').classList.remove('hidden');
@@ -470,14 +550,12 @@
             selectedAnswer = null;
             showResult = false;
 
-            // Update UI
             document.getElementById('questionText').textContent = currentQuestion.questionText;
             document.getElementById('questionContext').textContent = currentQuestion.context;
             document.getElementById('questionProgress').textContent = `Question ${questionCount + 1} of ${totalQuestions}`;
             document.getElementById('scoreProgress').textContent = `Score: ${score}/${questionCount}`;
             document.getElementById('progressFill').style.width = `${((questionCount + 1) / totalQuestions) * 100}%`;
 
-            // Create answer buttons
             const container = document.getElementById('answersContainer');
             container.innerHTML = '';
 
@@ -506,7 +584,6 @@
                 buttonElement.classList.add('incorrect');
                 buttonElement.innerHTML = '❌ ' + answer;
 
-                // Highlight correct answer
                 const buttons = document.querySelectorAll('.answer-btn');
                 buttons.forEach(btn => {
                     if (btn.textContent === currentQuestion.correctAnswer) {
@@ -516,7 +593,6 @@
                 });
             }
 
-            // Disable all buttons
             const buttons = document.querySelectorAll('.answer-btn');
             buttons.forEach(btn => {
                 btn.classList.add('disabled');
@@ -540,10 +616,8 @@
             quizComplete = true;
             isQuizStarted = false;
 
-            // Hide question card
             document.getElementById('questionCard').classList.add('hidden');
 
-            // Show results
             document.getElementById('quizComplete').classList.remove('hidden');
             document.getElementById('finalScore').textContent = `${score}/${totalQuestions}`;
             document.getElementById('percentageText').textContent = `You scored ${Math.round((score / totalQuestions) * 100)}%!`;
@@ -559,14 +633,13 @@
             score = 0;
             questionCount = 0;
 
-            // Show loading section
             document.getElementById('loadingSection').classList.remove('hidden');
             document.getElementById('quizStatus').classList.add('hidden');
             document.getElementById('quizComplete').classList.add('hidden');
             document.getElementById('questionCard').classList.add('hidden');
 
-            // Reset file input
             document.getElementById('fileInput').value = '';
+            document.getElementById('csvFileSelect').value = '';
         }
     </script>
 </body>
