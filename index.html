@@ -361,7 +361,8 @@
         // ===== ADD YOUR CSV FILES HERE =====
         const availableCSVFiles = [
             { name: "Basic Vocabulary N5", filename: "Vocabulary.csv" },
-            { name: "Hira Kata", filename: "hirakata.csv" }
+            { name: "Hira Kata", filename: "hirakata.csv" },
+            { name: "N5 Kanji", filename: "n5 kanji.csv" }
             // { name: "JLPT N4", filename: "jlpt_n4.csv" },
             // { name: "Common Phrases", filename: "phrases.csv" },
             // Add more files here following the same pattern
@@ -378,11 +379,19 @@
         let isQuizStarted = false;
         let quizComplete = false;
 
+
         const questionTypes = [
             { type: 'hiragana', question: 'What is the Hiragana for this?', answerKey: 'Hiragana' },
             { type: 'romaji', question: 'What is the Romaji for this?', answerKey: 'Romaji' },
             { type: 'meaning', question: 'What is the meaning?', answerKey: 'Meaning' }
         ];
+
+        function isKanjiQuiz(data) {
+            if (data.length === 0) return false;
+            // Check for the unique headers in the kanji CSV
+            const headers = Object.keys(data[0]);
+            return headers.includes('Kanji') && headers.includes('Japanese Sentence');
+        }
 
         // Populate dropdown on page load
         window.addEventListener('load', () => {
@@ -472,46 +481,151 @@
             reader.readAsText(file);
         }
 
+        // function generateQuestion() {
+        //     if (csvData.length < 4) return null;
+
+        //     const correctIndex = Math.floor(Math.random() * csvData.length);
+        //     const correctRow = csvData[correctIndex];
+
+        //     const questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
+
+        //     const wrongAnswers = [];
+        //     const usedIndices = new Set([correctIndex]);
+
+        //     while (wrongAnswers.length < 3) {
+        //         const randomIndex = Math.floor(Math.random() * csvData.length);
+        //         if (!usedIndices.has(randomIndex)) {
+        //             wrongAnswers.push(csvData[randomIndex][questionType.answerKey]);
+        //             usedIndices.add(randomIndex);
+        //         }
+        //     }
+
+        //     const allAnswers = [correctRow[questionType.answerKey], ...wrongAnswers];
+        //     const shuffledAnswers = allAnswers.sort(() => Math.random() - 0.5);
+
+        //     let questionContext = '';
+        //     if (questionType.type === 'hiragana') {
+        //         questionContext = `Romaji: ${correctRow.Romaji}\nMeaning: ${correctRow.Meaning}`;
+        //     } else if (questionType.type === 'romaji') {
+        //         questionContext = `Hiragana: ${correctRow.Hiragana}\nMeaning: ${correctRow.Meaning}`;
+        //     } else {
+        //         questionContext = `Hiragana: ${correctRow.Hiragana}\nRomaji: ${correctRow.Romaji}`;
+        //     }
+
+        //     if (correctRow['Example 1 JP'] && correctRow['Example 1 EN']) {
+        //         questionContext += `\n\nExample: ${correctRow['Example 1 JP']} (${correctRow['Example 1 EN']})`;
+        //     }
+
+        //     return {
+        //         questionText: questionType.question,
+        //         context: questionContext,
+        //         answers: shuffledAnswers,
+        //         correctAnswer: correctRow[questionType.answerKey],
+        //         correctRow: correctRow
+        //     };
+        // }
+
         function generateQuestion() {
-            if (csvData.length < 4) return null;
+            if (csvData.length < 2) return null;
+
+            const kanjiQuiz = isKanjiQuiz(csvData);
 
             const correctIndex = Math.floor(Math.random() * csvData.length);
             const correctRow = csvData[correctIndex];
 
-            const questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
+            let questionInfo = {};
 
-            const wrongAnswers = [];
+            // Determine number of options: 6 for Kanji, 4 for Vocabulary/Hira Kata
+            const numberOfDistractors = kanjiQuiz ? 5 : 3;
+
+            if (kanjiQuiz) {
+                // --- Kanji Quiz Logic (New) ---
+                if (csvData.length < 6) return null; // Need at least 6 entries for 6 options
+
+                questionInfo.questionText = 'Select the correct reading (Romaji) and Meaning for this Kanji:';
+                // Using .trim() for clean data output
+                questionInfo.context = `Kanji: ${correctRow.Kanji.trim()}\nSentence: ${correctRow['Japanese Sentence'].trim()}`;
+
+                // Correct Answer (Combined string: romaji - meaning)
+                const correctAnswerString = `${correctRow.Romaji.trim()} - ${correctRow.Meaning.trim()}`;
+                questionInfo.correctAnswer = correctAnswerString;
+                questionInfo.answers = [correctAnswerString];
+
+            } else {
+                // --- Existing Vocabulary Quiz Logic (Old) ---
+                if (csvData.length < 4) return null;
+
+                const questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
+
+                questionInfo.questionText = questionType.question;
+                questionInfo.correctAnswer = correctRow[questionType.answerKey];
+                questionInfo.answers = [questionInfo.correctAnswer];
+
+                let questionContext = '';
+                if (questionType.type === 'hiragana') {
+                    questionContext = `Romaji: ${correctRow.Romaji}\nMeaning: ${correctRow.Meaning}`;
+                } else if (questionType.type === 'romaji') {
+                    questionContext = `Hiragana: ${correctRow.Hiragana}\nMeaning: ${correctRow.Meaning}`;
+                } else {
+                    questionContext = `Hiragana: ${correctRow.Hiragana}\nRomaji: ${correctRow.Romaji}`;
+                }
+
+                if (correctRow['Example 1 JP'] && correctRow['Example 1 EN']) {
+                    questionContext += `\n\nExample: ${correctRow['Example 1 JP']} (${correctRow['Example 1 EN']})`;
+                }
+                questionInfo.context = questionContext;
+            }
+
+            // --- Generate Distractors (Common Logic) ---
             const usedIndices = new Set([correctIndex]);
 
-            while (wrongAnswers.length < 3) {
+            while (questionInfo.answers.length < numberOfDistractors + 1) {
                 const randomIndex = Math.floor(Math.random() * csvData.length);
-                if (!usedIndices.has(randomIndex)) {
-                    wrongAnswers.push(csvData[randomIndex][questionType.answerKey]);
-                    usedIndices.add(randomIndex);
+                const randomRow = csvData[randomIndex];
+
+                // Ensure we don't pick the same row index
+                if (usedIndices.has(randomIndex)) {
+                    continue;
+                }
+
+                let wrongAnswerString;
+
+                if (kanjiQuiz) {
+                    // Generate a Romaji - Meaning distractor
+                    wrongAnswerString = `${randomRow.Romaji.trim()} - ${randomRow.Meaning.trim()}`;
+
+                    // Check if the generated option is already one of the answers or the correct answer
+                    if (wrongAnswerString !== questionInfo.correctAnswer && !questionInfo.answers.includes(wrongAnswerString)) {
+                        questionInfo.answers.push(wrongAnswerString);
+                        usedIndices.add(randomIndex);
+                    }
+
+                } else {
+                    // Generate a distractor using the same answerKey as the question type (for old format)
+                    const questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
+                    wrongAnswerString = randomRow[questionType.answerKey];
+
+                    // Check if the generated option is already one of the answers or the correct answer
+                    if (wrongAnswerString !== questionInfo.correctAnswer && !questionInfo.answers.includes(wrongAnswerString)) {
+                        questionInfo.answers.push(wrongAnswerString);
+                        usedIndices.add(randomIndex);
+                    }
+                }
+
+                // Safety break for extremely small or duplicate-heavy datasets
+                if (usedIndices.size >= csvData.length && questionInfo.answers.length < numberOfDistractors + 1) {
+                    break;
                 }
             }
 
-            const allAnswers = [correctRow[questionType.answerKey], ...wrongAnswers];
-            const shuffledAnswers = allAnswers.sort(() => Math.random() - 0.5);
-
-            let questionContext = '';
-            if (questionType.type === 'hiragana') {
-                questionContext = `Romaji: ${correctRow.Romaji}\nMeaning: ${correctRow.Meaning}`;
-            } else if (questionType.type === 'romaji') {
-                questionContext = `Hiragana: ${correctRow.Hiragana}\nMeaning: ${correctRow.Meaning}`;
-            } else {
-                questionContext = `Hiragana: ${correctRow.Hiragana}\nRomaji: ${correctRow.Romaji}`;
-            }
-
-            if (correctRow['Example 1 JP'] && correctRow['Example 1 EN']) {
-                questionContext += `\n\nExample: ${correctRow['Example 1 JP']} (${correctRow['Example 1 EN']})`;
-            }
+            // Shuffle answers before returning
+            questionInfo.answers.sort(() => Math.random() - 0.5);
 
             return {
-                questionText: questionType.question,
-                context: questionContext,
-                answers: shuffledAnswers,
-                correctAnswer: correctRow[questionType.answerKey],
+                questionText: questionInfo.questionText,
+                context: questionInfo.context,
+                answers: questionInfo.answers,
+                correctAnswer: questionInfo.correctAnswer,
                 correctRow: correctRow
             };
         }
