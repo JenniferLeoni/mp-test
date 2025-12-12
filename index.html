@@ -292,470 +292,773 @@
             <div id="quizStatus" class="text-center hidden">
                 <p class="success-msg mb-20" id="statusText"></p>
 
-                <!-- Question Count Selection -->
+                <p class="success-msg mb-20" id="statusText"></p>
+
+                <div id="filterContainer" class="hidden"
+                    style="margin-bottom: 25px; text-align: left; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #e9ecef;">
+                    <div style="font-weight: bold; margin-bottom: 10px; color: #333;">📚 Select Chapters/Sections to
+                        Study:</div>
+
+                    <div style="margin-bottom: 10px;">
+                        <button class="btn btn-secondary" onclick="toggleAllFilters(true)"
+                            style="padding: 5px 10px; font-size: 12px;">Select All</button>
+                        <button class="btn btn-secondary" onclick="toggleAllFilters(false)"
+                            style="padding: 5px 10px; font-size: 12px;">Deselect All</button>
+                    </div>
+
+                    <div id="checkboxGrid"
+                        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; max-height: 200px; overflow-y: auto;">
+                    </div>
+                </div>
+
                 <div style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #333;">
-                        Number of Questions:
-                    </label>
-                    <select id="questionCount"
-                        style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; min-width: 120px;">
-                        <option value="5">5 questions</option>
-                        <option value="10" selected>10 questions</option>
-                        <option value="15">15 questions</option>
-                        <option value="20">20 questions</option>
-                        <option value="25">25 questions</option>
-                        <option value="30">30 questions</option>
-                        <option value="50">50 questions</option>
-                        <option value="all">All entries</option>
-                    </select>
+
+                    <!-- Question Count Selection -->
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #333;">
+                            Number of Questions:
+                        </label>
+                        <select id="questionCount"
+                            style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; min-width: 120px;">
+                            <option value="5">5 questions</option>
+                            <option value="10" selected>10 questions</option>
+                            <option value="15">15 questions</option>
+                            <option value="20">20 questions</option>
+                            <option value="25">25 questions</option>
+                            <option value="30">30 questions</option>
+                            <option value="50">50 questions</option>
+                            <option value="all">All entries</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-success" onclick="startQuiz()">
+                        ▶️ Start Quiz
+                    </button>
                 </div>
 
-                <button class="btn btn-success" onclick="startQuiz()">
-                    ▶️ Start Quiz
-                </button>
+                <!-- Quiz Complete -->
+                <div id="quizComplete" class="text-center hidden">
+                    <h2 style="margin-bottom: 20px;">Quiz Complete! 🎉</h2>
+                    <div class="score-display" id="finalScore"></div>
+                    <p id="percentageText" style="font-size: 18px; margin-bottom: 30px;"></p>
+                    <div>
+                        <button class="btn btn-success" onclick="startQuiz()" style="margin-right: 10px;">Take Quiz
+                            Again</button>
+                        <button class="btn btn-secondary" onclick="resetQuiz()">🔄 Choose Different CSV</button>
+                    </div>
+                </div>
             </div>
 
-            <!-- Quiz Complete -->
-            <div id="quizComplete" class="text-center hidden">
-                <h2 style="margin-bottom: 20px;">Quiz Complete! 🎉</h2>
-                <div class="score-display" id="finalScore"></div>
-                <p id="percentageText" style="font-size: 18px; margin-bottom: 30px;"></p>
-                <div>
-                    <button class="btn btn-success" onclick="startQuiz()" style="margin-right: 10px;">Take Quiz
-                        Again</button>
-                    <button class="btn btn-secondary" onclick="resetQuiz()">🔄 Choose Different CSV</button>
+            <!-- Question Card -->
+            <div id="questionCard" class="card hidden">
+                <!-- Progress -->
+                <div class="quiz-header">
+                    <div id="questionProgress">Question 1 of 10</div>
+                    <div id="scoreProgress">Score: 0/0</div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 10%"></div>
+                </div>
+
+                <!-- Question Content -->
+                <div style="margin-bottom: 30px;">
+                    <h2 id="questionText" style="margin-bottom: 20px; font-size: 24px;"></h2>
+                    <div id="questionContext" class="question-context"></div>
+                </div>
+
+                <!-- Answer Options -->
+                <div id="answersContainer" class="answers-grid"></div>
+
+                <!-- Next Button -->
+                <div id="nextButtonContainer" class="text-center hidden">
+                    <button class="btn btn-primary" onclick="handleNextQuestion()" id="nextButton">Next
+                        Question</button>
                 </div>
             </div>
         </div>
 
-        <!-- Question Card -->
-        <div id="questionCard" class="card hidden">
-            <!-- Progress -->
-            <div class="quiz-header">
-                <div id="questionProgress">Question 1 of 10</div>
-                <div id="scoreProgress">Score: 0/0</div>
-            </div>
+        <script>
+            // ===== ADD YOUR CSV FILES HERE =====
+            const availableCSVFiles = [
+                { name: "Basic Vocabulary N5", filename: "Vocabulary.csv" },
+                { name: "Hira Kata", filename: "hirakata.csv" },
+                { name: "N5 Kanji", filename: "n5 kanji.csv" },
+                { name: "IRODORI 0", filename: "irodori.csv" }
+                // { name: "JLPT N4", filename: "jlpt_n4.csv" },
+                // { name: "Common Phrases", filename: "phrases.csv" },
+                // Add more files here following the same pattern
+            ];
 
-            <!-- Progress Bar -->
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressFill" style="width: 10%"></div>
-            </div>
-
-            <!-- Question Content -->
-            <div style="margin-bottom: 30px;">
-                <h2 id="questionText" style="margin-bottom: 20px; font-size: 24px;"></h2>
-                <div id="questionContext" class="question-context"></div>
-            </div>
-
-            <!-- Answer Options -->
-            <div id="answersContainer" class="answers-grid"></div>
-
-            <!-- Next Button -->
-            <div id="nextButtonContainer" class="text-center hidden">
-                <button class="btn btn-primary" onclick="handleNextQuestion()" id="nextButton">Next Question</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // ===== ADD YOUR CSV FILES HERE =====
-        const availableCSVFiles = [
-            { name: "Basic Vocabulary N5", filename: "Vocabulary.csv" },
-            { name: "Hira Kata", filename: "hirakata.csv" },
-            { name: "N5 Kanji", filename: "n5 kanji.csv" }
-            // { name: "JLPT N4", filename: "jlpt_n4.csv" },
-            // { name: "Common Phrases", filename: "phrases.csv" },
-            // Add more files here following the same pattern
-        ];
-
-        // Global variables
-        let csvData = [];
-        let currentQuestion = null;
-        let selectedAnswer = null;
-        let showResult = false;
-        let score = 0;
-        let questionCount = 0;
-        let totalQuestions = 10;
-        let isQuizStarted = false;
-        let quizComplete = false;
+            // Global variables
+            let csvData = [];
+            let quizPool = [];
+            let currentQuestion = null;
+            let selectedAnswer = null;
+            let showResult = false;
+            let score = 0;
+            let questionCount = 0;
+            let totalQuestions = 10;
+            let isQuizStarted = false;
+            let quizComplete = false;
 
 
-        const questionTypes = [
-            { type: 'hiragana', question: 'What is the Hiragana for this?', answerKey: 'Hiragana' },
-            { type: 'romaji', question: 'What is the Romaji for this?', answerKey: 'Romaji' },
-            { type: 'meaning', question: 'What is the meaning?', answerKey: 'Meaning' }
-        ];
+            const questionTypes = [
+                { type: 'hiragana', question: 'What is the Hiragana for this?', answerKey: 'Hiragana' },
+                { type: 'romaji', question: 'What is the Romaji for this?', answerKey: 'Romaji' },
+                { type: 'meaning', question: 'What is the meaning?', answerKey: 'Meaning' }
+            ];
 
-        function isKanjiQuiz(data) {
-            if (data.length === 0) return false;
-            // Check for the unique headers in the kanji CSV
-            const headers = Object.keys(data[0]);
-            return headers.includes('Kanji') && headers.includes('Japanese Sentence');
-        }
+            function isKanjiQuiz(data) {
+                if (data.length === 0) return false;
+                // Check for the unique headers in the kanji CSV
+                const headers = Object.keys(data[0]);
+                return headers.includes('Kanji') && headers.includes('Japanese Sentence');
+            }
 
-        // Populate dropdown on page load
-        window.addEventListener('load', () => {
-            const select = document.getElementById('csvFileSelect');
-            availableCSVFiles.forEach(file => {
-                const option = document.createElement('option');
-                option.value = file.filename;
-                option.textContent = file.name;
-                select.appendChild(option);
+            // Populate dropdown on page load
+            window.addEventListener('load', () => {
+                const select = document.getElementById('csvFileSelect');
+                availableCSVFiles.forEach(file => {
+                    const option = document.createElement('option');
+                    option.value = file.filename;
+                    option.textContent = file.name;
+                    select.appendChild(option);
+                });
             });
-        });
 
-        async function loadSelectedFile() {
-            const select = document.getElementById('csvFileSelect');
-            const filename = select.value;
+            async function loadSelectedFile() {
+                const select = document.getElementById('csvFileSelect');
+                const filename = select.value;
 
-            if (!filename) {
-                alert('Please select a CSV file first!');
-                return;
-            }
-
-            try {
-                const response = await fetch(filename);
-                if (response.ok) {
-                    const text = await response.text();
-                    const selectedName = select.options[select.selectedIndex].text;
-                    parseCSV(text, selectedName);
-                } else {
-                    alert(`Could not load ${filename}. Make sure the file is in the same directory as this HTML file.`);
+                if (!filename) {
+                    alert('Please select a CSV file first!');
+                    return;
                 }
-            } catch (error) {
-                alert(`Error loading ${filename}: ${error.message}\n\nMake sure the file is in the same directory as this HTML file.`);
-            }
-        }
 
-        function parseCSV(text, filename = 'uploaded file') {
-            try {
-                const result = Papa.parse(text, {
-                    header: true,
-                    skipEmptyLines: true,
-                    dynamicTyping: false,
-                    delimitersToGuess: [',', '\t', '|', ';']
+                try {
+                    const response = await fetch(filename);
+                    if (response.ok) {
+                        const text = await response.text();
+                        const selectedName = select.options[select.selectedIndex].text;
+                        parseCSV(text, selectedName);
+                    } else {
+                        alert(`Could not load ${filename}. Make sure the file is in the same directory as this HTML file.`);
+                    }
+                } catch (error) {
+                    alert(`Error loading ${filename}: ${error.message}\n\nMake sure the file is in the same directory as this HTML file.`);
+                }
+            }
+
+            // NEW: Check if CSV matches the new sentence format
+            function isSentenceQuiz(data) {
+                if (data.length === 0) return false;
+                const headers = Object.keys(data[0]);
+                // Check for specific columns in your new CSV
+                return headers.includes('Japanese sentence') && (headers.includes('section') || headers.includes('chapter'));
+            }
+
+            // NEW: Generate filter checkboxes based on CSV data
+            function createFilters() {
+                const container = document.getElementById('filterContainer');
+                const grid = document.getElementById('checkboxGrid');
+                grid.innerHTML = '';
+
+                if (!isSentenceQuiz(csvData)) {
+                    container.classList.add('hidden');
+                    return;
+                }
+
+                // Get unique Section/Chapter combinations
+                const groups = new Set();
+                csvData.forEach(row => {
+                    const sec = row.section ? row.section.trim() : '';
+                    const chap = row.chapter ? row.chapter.trim() : '';
+                    if (sec || chap) {
+                        groups.add(`${sec}|${chap}`);
+                    }
                 });
 
-                // Clean headers by trimming whitespace
-                const cleanedData = result.data.map(row => {
-                    const cleanedRow = {};
-                    Object.keys(row).forEach(key => {
-                        const cleanKey = key.trim();
-                        cleanedRow[cleanKey] = row[key];
+                if (groups.size === 0) {
+                    container.classList.add('hidden');
+                    return;
+                }
+
+                container.classList.remove('hidden');
+
+                // Sort and create checkboxes
+                Array.from(groups).sort().forEach(groupKey => {
+                    const [sec, chap] = groupKey.split('|');
+                    let labelText = '';
+                    if (sec && chap) labelText = `${sec} - Ch ${chap}`;
+                    else if (sec) labelText = sec;
+                    else labelText = `Chapter ${chap}`;
+
+                    const wrapper = document.createElement('label');
+                    wrapper.style.display = 'flex';
+                    wrapper.style.alignItems = 'center';
+                    wrapper.style.fontSize = '14px';
+                    wrapper.style.cursor = 'pointer';
+
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.value = groupKey;
+                    checkbox.checked = true; // Default to checked
+                    checkbox.className = 'filter-checkbox';
+                    checkbox.style.marginRight = '6px';
+
+                    wrapper.appendChild(checkbox);
+                    wrapper.appendChild(document.createTextNode(labelText));
+                    grid.appendChild(wrapper);
+                });
+            }
+
+            // NEW: Helper to toggle all checkboxes
+            function toggleAllFilters(checkState) {
+                const checkboxes = document.querySelectorAll('.filter-checkbox');
+                checkboxes.forEach(cb => cb.checked = checkState);
+            }
+
+            // function parseCSV(text, filename = 'uploaded file') {
+            //     try {
+            //         const result = Papa.parse(text, {
+            //             header: true,
+            //             skipEmptyLines: true,
+            //             dynamicTyping: false,
+            //             delimitersToGuess: [',', '\t', '|', ';']
+            //         });
+
+            //         // Clean headers by trimming whitespace
+            //         const cleanedData = result.data.map(row => {
+            //             const cleanedRow = {};
+            //             Object.keys(row).forEach(key => {
+            //                 const cleanKey = key.trim();
+            //                 cleanedRow[cleanKey] = row[key];
+            //             });
+            //             return cleanedRow;
+            //         });
+
+            //         csvData = cleanedData;
+            //         console.log('CSV loaded:', csvData.length, 'entries from', filename);
+
+            //         // Show quiz status
+            //         document.getElementById('loadingSection').classList.add('hidden');
+            //         document.getElementById('quizStatus').classList.remove('hidden');
+            //         document.getElementById('statusText').textContent = `✅ CSV loaded: ${filename} (${csvData.length} entries)`;
+
+            //         // Set default question count based on data size
+            //         const questionCountSelect = document.getElementById('questionCount');
+            //         if (csvData.length <= 10) {
+            //             questionCountSelect.value = 'all';
+            //         } else if (csvData.length <= 20) {
+            //             questionCountSelect.value = '10';
+            //         } else {
+            //             questionCountSelect.value = '15';
+            //         }
+
+            //     } catch (error) {
+            //         console.error('Error parsing CSV:', error);
+            //         alert('Error parsing CSV file. Please check the format.');
+            //     }
+            // }
+
+            function parseCSV(text, filename = 'uploaded file') {
+                try {
+                    const result = Papa.parse(text, {
+                        header: true,
+                        skipEmptyLines: true,
+                        dynamicTyping: false
                     });
-                    return cleanedRow;
+
+                    const cleanedData = result.data.map(row => {
+                        const cleanedRow = {};
+                        Object.keys(row).forEach(key => {
+                            cleanedRow[key.trim()] = row[key];
+                        });
+                        return cleanedRow;
+                    });
+
+                    csvData = cleanedData;
+                    quizPool = [...csvData]; // Initialize pool with everything
+
+                    console.log('CSV loaded:', csvData.length, 'entries');
+
+                    document.getElementById('loadingSection').classList.add('hidden');
+                    document.getElementById('quizStatus').classList.remove('hidden');
+                    document.getElementById('statusText').textContent = `✅ CSV loaded: ${filename} (${csvData.length} entries)`;
+
+                    // Generate filters for the new type
+                    createFilters();
+
+                    const questionCountSelect = document.getElementById('questionCount');
+                    if (csvData.length <= 10) questionCountSelect.value = 'all';
+                    else if (csvData.length <= 20) questionCountSelect.value = '10';
+                    else questionCountSelect.value = '15';
+
+                } catch (error) {
+                    console.error('Error parsing CSV:', error);
+                    alert('Error parsing CSV file. Please check the format.');
+                }
+            }
+
+
+            function handleFileUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    parseCSV(e.target.result, file.name);
+                };
+                reader.readAsText(file);
+            }
+
+            // function generateQuestion() {
+            //     if (csvData.length < 4) return null;
+
+            //     const correctIndex = Math.floor(Math.random() * csvData.length);
+            //     const correctRow = csvData[correctIndex];
+
+            //     const questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
+
+            //     const wrongAnswers = [];
+            //     const usedIndices = new Set([correctIndex]);
+
+            //     while (wrongAnswers.length < 3) {
+            //         const randomIndex = Math.floor(Math.random() * csvData.length);
+            //         if (!usedIndices.has(randomIndex)) {
+            //             wrongAnswers.push(csvData[randomIndex][questionType.answerKey]);
+            //             usedIndices.add(randomIndex);
+            //         }
+            //     }
+
+            //     const allAnswers = [correctRow[questionType.answerKey], ...wrongAnswers];
+            //     const shuffledAnswers = allAnswers.sort(() => Math.random() - 0.5);
+
+            //     let questionContext = '';
+            //     if (questionType.type === 'hiragana') {
+            //         questionContext = `Romaji: ${correctRow.Romaji}\nMeaning: ${correctRow.Meaning}`;
+            //     } else if (questionType.type === 'romaji') {
+            //         questionContext = `Hiragana: ${correctRow.Hiragana}\nMeaning: ${correctRow.Meaning}`;
+            //     } else {
+            //         questionContext = `Hiragana: ${correctRow.Hiragana}\nRomaji: ${correctRow.Romaji}`;
+            //     }
+
+            //     if (correctRow['Example 1 JP'] && correctRow['Example 1 EN']) {
+            //         questionContext += `\n\nExample: ${correctRow['Example 1 JP']} (${correctRow['Example 1 EN']})`;
+            //     }
+
+            //     return {
+            //         questionText: questionType.question,
+            //         context: questionContext,
+            //         answers: shuffledAnswers,
+            //         correctAnswer: correctRow[questionType.answerKey],
+            //         correctRow: correctRow
+            //     };
+            // }
+
+            // function generateQuestion() {
+            //     if (csvData.length < 2) return null;
+
+            //     const kanjiQuiz = isKanjiQuiz(csvData);
+
+            //     const correctIndex = Math.floor(Math.random() * csvData.length);
+            //     const correctRow = csvData[correctIndex];
+
+            //     let questionInfo = {};
+
+            //     // Determine number of options: 6 for Kanji, 4 for Vocabulary/Hira Kata
+            //     const numberOfDistractors = kanjiQuiz ? 5 : 3;
+
+            //     if (kanjiQuiz) {
+            //         // --- Kanji Quiz Logic (New) ---
+            //         if (csvData.length < 6) return null; // Need at least 6 entries for 6 options
+
+            //         questionInfo.questionText = 'Select the correct reading (Romaji) and Meaning for this Kanji:';
+            //         // Using .trim() for clean data output
+            //         questionInfo.context = `Kanji: ${correctRow.Kanji.trim()}\nSentence: ${correctRow['Japanese Sentence'].trim()}`;
+
+            //         // Correct Answer (Combined string: romaji - meaning)
+            //         const correctAnswerString = `${correctRow.Romaji.trim()} - ${correctRow.Meaning.trim()}`;
+            //         questionInfo.correctAnswer = correctAnswerString;
+            //         questionInfo.answers = [correctAnswerString];
+
+            //     } else {
+            //         // --- Existing Vocabulary Quiz Logic (Old) ---
+            //         if (csvData.length < 4) return null;
+
+            //         const questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
+
+            //         questionInfo.questionText = questionType.question;
+            //         questionInfo.correctAnswer = correctRow[questionType.answerKey];
+            //         questionInfo.answers = [questionInfo.correctAnswer];
+
+            //         let questionContext = '';
+            //         if (questionType.type === 'hiragana') {
+            //             questionContext = `Romaji: ${correctRow.Romaji}\nMeaning: ${correctRow.Meaning}`;
+            //         } else if (questionType.type === 'romaji') {
+            //             questionContext = `Hiragana: ${correctRow.Hiragana}\nMeaning: ${correctRow.Meaning}`;
+            //         } else {
+            //             questionContext = `Hiragana: ${correctRow.Hiragana}\nRomaji: ${correctRow.Romaji}`;
+            //         }
+
+            //         if (correctRow['Example 1 JP'] && correctRow['Example 1 EN']) {
+            //             questionContext += `\n\nExample: ${correctRow['Example 1 JP']} (${correctRow['Example 1 EN']})`;
+            //         }
+            //         questionInfo.context = questionContext;
+            //     }
+
+            //     // --- Generate Distractors (Common Logic) ---
+            //     const usedIndices = new Set([correctIndex]);
+
+            //     while (questionInfo.answers.length < numberOfDistractors + 1) {
+            //         const randomIndex = Math.floor(Math.random() * csvData.length);
+            //         const randomRow = csvData[randomIndex];
+
+            //         // Ensure we don't pick the same row index
+            //         if (usedIndices.has(randomIndex)) {
+            //             continue;
+            //         }
+
+            //         let wrongAnswerString;
+
+            //         if (kanjiQuiz) {
+            //             // Generate a Romaji - Meaning distractor
+            //             wrongAnswerString = `${randomRow.Romaji.trim()} - ${randomRow.Meaning.trim()}`;
+
+            //             // Check if the generated option is already one of the answers or the correct answer
+            //             if (wrongAnswerString !== questionInfo.correctAnswer && !questionInfo.answers.includes(wrongAnswerString)) {
+            //                 questionInfo.answers.push(wrongAnswerString);
+            //                 usedIndices.add(randomIndex);
+            //             }
+
+            //         } else {
+            //             // Generate a distractor using the same answerKey as the question type (for old format)
+            //             const questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
+            //             wrongAnswerString = randomRow[questionType.answerKey];
+
+            //             // Check if the generated option is already one of the answers or the correct answer
+            //             if (wrongAnswerString !== questionInfo.correctAnswer && !questionInfo.answers.includes(wrongAnswerString)) {
+            //                 questionInfo.answers.push(wrongAnswerString);
+            //                 usedIndices.add(randomIndex);
+            //             }
+            //         }
+
+            //         // Safety break for extremely small or duplicate-heavy datasets
+            //         if (usedIndices.size >= csvData.length && questionInfo.answers.length < numberOfDistractors + 1) {
+            //             break;
+            //         }
+            //     }
+
+            //     // Shuffle answers before returning
+            //     questionInfo.answers.sort(() => Math.random() - 0.5);
+
+            //     return {
+            //         questionText: questionInfo.questionText,
+            //         context: questionInfo.context,
+            //         answers: questionInfo.answers,
+            //         correctAnswer: questionInfo.correctAnswer,
+            //         correctRow: correctRow
+            //     };
+            // }
+
+
+            function generateQuestion() {
+                if (quizPool.length < 1) return null;
+
+                // Detect Quiz Type
+                const kanjiQuiz = isKanjiQuiz(csvData);
+                const sentenceQuiz = isSentenceQuiz(csvData);
+
+                // Pick Correct Answer from the FILTERED POOL (quizPool)
+                const correctIndex = Math.floor(Math.random() * quizPool.length);
+                const correctRow = quizPool[correctIndex];
+
+                let questionInfo = {};
+                const numberOfDistractors = (kanjiQuiz || sentenceQuiz) ? 3 : 3;
+
+                // --- NEW: Sentence Quiz Logic ---
+                if (sentenceQuiz) {
+                    questionInfo.questionText = 'Select the correct Reading and Meaning for this sentence:';
+                    // Display the Japanese sentence
+                    questionInfo.context = correctRow['Japanese sentence'] || correctRow['Japanese Sentence'];
+
+                    // Correct Answer format: Romaji - Meaning
+                    const correctAnswerString = `${correctRow.Romaji} - ${correctRow.Meaning}`;
+                    questionInfo.correctAnswer = correctAnswerString;
+                    questionInfo.answers = [correctAnswerString];
+                }
+                // --- Existing Kanji Logic ---
+                else if (kanjiQuiz) {
+                    questionInfo.questionText = 'Select the correct reading (Romaji) and Meaning for this Kanji:';
+                    questionInfo.context = `Kanji: ${correctRow.Kanji}\nSentence: ${correctRow['Japanese Sentence']}`;
+                    const correctAnswerString = `${correctRow.Romaji} - ${correctRow.Meaning}`;
+                    questionInfo.correctAnswer = correctAnswerString;
+                    questionInfo.answers = [correctAnswerString];
+                }
+                // --- Existing Vocab Logic ---
+                else {
+                    const questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
+                    questionInfo.questionText = questionType.question;
+                    questionInfo.correctAnswer = correctRow[questionType.answerKey];
+                    questionInfo.answers = [questionInfo.correctAnswer];
+
+                    let context = '';
+                    if (questionType.type === 'hiragana') context = `Romaji: ${correctRow.Romaji}\nMeaning: ${correctRow.Meaning}`;
+                    else if (questionType.type === 'romaji') context = `Hiragana: ${correctRow.Hiragana}\nMeaning: ${correctRow.Meaning}`;
+                    else context = `Hiragana: ${correctRow.Hiragana}\nRomaji: ${correctRow.Romaji}`;
+
+                    questionInfo.context = context;
+                }
+
+                // --- Generate Distractors (Randomized from FULL csvData) ---
+                // Note: Distractors come from the entire file, not just the selected chapter, to make it harder.
+                const usedAnswers = new Set([questionInfo.correctAnswer]);
+
+                while (questionInfo.answers.length < numberOfDistractors + 1) {
+                    const randomIndex = Math.floor(Math.random() * csvData.length);
+                    const randomRow = csvData[randomIndex];
+
+                    let wrongAnswerString;
+
+                    if (sentenceQuiz || kanjiQuiz) {
+                        wrongAnswerString = `${randomRow.Romaji} - ${randomRow.Meaning}`;
+                    } else {
+                        // For vocab, try to match the question type's answer key if possible, 
+                        // or just fallback to simple random logic (simplified here)
+                        // To keep logic simple and consistent with your old code:
+                        // We need to know the question type key used above. 
+                        // Since we didn't store it for vocab in this scope, we re-derive or simplify.
+                        // For safety in this specific "replace" block, let's just grab the same field as correct answer if valid
+                        // Or roughly estimate based on content.
+                        // BETTER APPROACH for Vocab: 
+                        if (!sentenceQuiz && !kanjiQuiz) {
+                            // We re-check keys to find a mismatching string
+                            const possibleKeys = ['Hiragana', 'Romaji', 'Meaning'];
+                            // Try to find which key holds the correct answer to pick a distractor of same type
+                            const key = possibleKeys.find(k => correctRow[k] === questionInfo.correctAnswer);
+                            wrongAnswerString = randomRow[key || 'Meaning'];
+                        }
+                    }
+
+                    if (!usedAnswers.has(wrongAnswerString)) {
+                        questionInfo.answers.push(wrongAnswerString);
+                        usedAnswers.add(wrongAnswerString);
+                    }
+
+                    // Safety break
+                    if (usedAnswers.size >= csvData.length && questionInfo.answers.length < numberOfDistractors + 1) break;
+                    if (questionInfo.answers.length >= 20) break; // Infinite loop guard
+                }
+
+                questionInfo.answers.sort(() => Math.random() - 0.5);
+
+                return {
+                    questionText: questionInfo.questionText,
+                    context: questionInfo.context,
+                    answers: questionInfo.answers,
+                    correctAnswer: questionInfo.correctAnswer,
+                    correctRow: correctRow
+                };
+            }
+
+            function startQuiz() {
+                // 1. Apply Filters if it's a sentence quiz
+                if (isSentenceQuiz(csvData)) {
+                    const checkboxes = document.querySelectorAll('.filter-checkbox:checked');
+                    const selectedKeys = new Set(Array.from(checkboxes).map(cb => cb.value));
+
+                    if (selectedKeys.size === 0) {
+                        alert('Please select at least one chapter/section to study!');
+                        return;
+                    }
+
+                    quizPool = csvData.filter(row => {
+                        const sec = row.section ? row.section.trim() : '';
+                        const chap = row.chapter ? row.chapter.trim() : '';
+                        const key = `${sec}|${chap}`;
+                        return selectedKeys.has(key);
+                    });
+                } else {
+                    quizPool = [...csvData]; // Use everything for standard quizzes
+                }
+
+                if (quizPool.length < 4) {
+                    alert(`Not enough questions available in selected sections (Found: ${quizPool.length}). Select more sections or upload a larger file.`);
+                    return;
+                }
+
+                // 2. Set Question Counts based on quizPool size
+                const questionCountSelect = document.getElementById('questionCount');
+                const selectedCount = questionCountSelect.value;
+
+                if (selectedCount === 'all') {
+                    totalQuestions = quizPool.length;
+                } else {
+                    totalQuestions = Math.min(parseInt(selectedCount), quizPool.length);
+                }
+
+                isQuizStarted = true;
+                questionCount = 0;
+                score = 0;
+                quizComplete = false;
+
+                document.getElementById('quizStatus').classList.add('hidden');
+                document.getElementById('quizComplete').classList.add('hidden');
+                document.getElementById('questionCard').classList.remove('hidden');
+
+                nextQuestion();
+            }
+
+            // function startQuiz() {
+            //     if (csvData.length < 4) {
+            //         alert('Please upload a CSV file with at least 4 entries to start the quiz.');
+            //         return;
+            //     }
+
+            //     const questionCountSelect = document.getElementById('questionCount');
+            //     const selectedCount = questionCountSelect.value;
+
+            //     if (selectedCount === 'all') {
+            //         totalQuestions = csvData.length;
+            //     } else {
+            //         totalQuestions = Math.min(parseInt(selectedCount), csvData.length);
+            //     }
+
+            //     console.log(`Starting quiz with ${totalQuestions} questions`);
+
+            //     isQuizStarted = true;
+            //     questionCount = 0;
+            //     score = 0;
+            //     quizComplete = false;
+
+            //     document.getElementById('quizStatus').classList.add('hidden');
+            //     document.getElementById('quizComplete').classList.add('hidden');
+            //     document.getElementById('questionCard').classList.remove('hidden');
+
+            //     nextQuestion();
+            // }
+
+            function nextQuestion() {
+                currentQuestion = generateQuestion();
+                selectedAnswer = null;
+                showResult = false;
+
+                document.getElementById('questionText').textContent = currentQuestion.questionText;
+                document.getElementById('questionContext').textContent = currentQuestion.context;
+                document.getElementById('questionProgress').textContent = `Question ${questionCount + 1} of ${totalQuestions}`;
+                document.getElementById('scoreProgress').textContent = `Score: ${score}/${questionCount}`;
+                document.getElementById('progressFill').style.width = `${((questionCount + 1) / totalQuestions) * 100}%`;
+
+                const container = document.getElementById('answersContainer');
+                container.innerHTML = '';
+
+                currentQuestion.answers.forEach((answer, index) => {
+                    const button = document.createElement('button');
+                    button.className = 'answer-btn';
+                    button.textContent = answer;
+                    button.onclick = () => handleAnswerSelect(answer, button);
+                    container.appendChild(button);
                 });
 
-                csvData = cleanedData;
-                console.log('CSV loaded:', csvData.length, 'entries from', filename);
+                document.getElementById('nextButtonContainer').classList.add('hidden');
+            }
 
-                // Show quiz status
-                document.getElementById('loadingSection').classList.add('hidden');
-                document.getElementById('quizStatus').classList.remove('hidden');
-                document.getElementById('statusText').textContent = `✅ CSV loaded: ${filename} (${csvData.length} entries)`;
+            function handleAnswerSelect(answer, buttonElement) {
+                if (showResult) return;
 
-                // Set default question count based on data size
-                const questionCountSelect = document.getElementById('questionCount');
-                if (csvData.length <= 10) {
-                    questionCountSelect.value = 'all';
-                } else if (csvData.length <= 20) {
-                    questionCountSelect.value = '10';
+                selectedAnswer = answer;
+                showResult = true;
+
+                if (answer === currentQuestion.correctAnswer) {
+                    score++;
+                    buttonElement.classList.add('correct');
+                    buttonElement.innerHTML = '✅ ' + answer;
                 } else {
-                    questionCountSelect.value = '15';
+                    buttonElement.classList.add('incorrect');
+                    buttonElement.innerHTML = '❌ ' + answer;
+
+                    const buttons = document.querySelectorAll('.answer-btn');
+                    buttons.forEach(btn => {
+                        if (btn.textContent === currentQuestion.correctAnswer) {
+                            btn.classList.add('correct');
+                            btn.innerHTML = '✅ ' + btn.textContent;
+                        }
+                    });
                 }
-
-            } catch (error) {
-                console.error('Error parsing CSV:', error);
-                alert('Error parsing CSV file. Please check the format.');
-            }
-        }
-
-        function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                parseCSV(e.target.result, file.name);
-            };
-            reader.readAsText(file);
-        }
-
-        // function generateQuestion() {
-        //     if (csvData.length < 4) return null;
-
-        //     const correctIndex = Math.floor(Math.random() * csvData.length);
-        //     const correctRow = csvData[correctIndex];
-
-        //     const questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
-
-        //     const wrongAnswers = [];
-        //     const usedIndices = new Set([correctIndex]);
-
-        //     while (wrongAnswers.length < 3) {
-        //         const randomIndex = Math.floor(Math.random() * csvData.length);
-        //         if (!usedIndices.has(randomIndex)) {
-        //             wrongAnswers.push(csvData[randomIndex][questionType.answerKey]);
-        //             usedIndices.add(randomIndex);
-        //         }
-        //     }
-
-        //     const allAnswers = [correctRow[questionType.answerKey], ...wrongAnswers];
-        //     const shuffledAnswers = allAnswers.sort(() => Math.random() - 0.5);
-
-        //     let questionContext = '';
-        //     if (questionType.type === 'hiragana') {
-        //         questionContext = `Romaji: ${correctRow.Romaji}\nMeaning: ${correctRow.Meaning}`;
-        //     } else if (questionType.type === 'romaji') {
-        //         questionContext = `Hiragana: ${correctRow.Hiragana}\nMeaning: ${correctRow.Meaning}`;
-        //     } else {
-        //         questionContext = `Hiragana: ${correctRow.Hiragana}\nRomaji: ${correctRow.Romaji}`;
-        //     }
-
-        //     if (correctRow['Example 1 JP'] && correctRow['Example 1 EN']) {
-        //         questionContext += `\n\nExample: ${correctRow['Example 1 JP']} (${correctRow['Example 1 EN']})`;
-        //     }
-
-        //     return {
-        //         questionText: questionType.question,
-        //         context: questionContext,
-        //         answers: shuffledAnswers,
-        //         correctAnswer: correctRow[questionType.answerKey],
-        //         correctRow: correctRow
-        //     };
-        // }
-
-        function generateQuestion() {
-            if (csvData.length < 2) return null;
-
-            const kanjiQuiz = isKanjiQuiz(csvData);
-
-            const correctIndex = Math.floor(Math.random() * csvData.length);
-            const correctRow = csvData[correctIndex];
-
-            let questionInfo = {};
-
-            // Determine number of options: 6 for Kanji, 4 for Vocabulary/Hira Kata
-            const numberOfDistractors = kanjiQuiz ? 5 : 3;
-
-            if (kanjiQuiz) {
-                // --- Kanji Quiz Logic (New) ---
-                if (csvData.length < 6) return null; // Need at least 6 entries for 6 options
-
-                questionInfo.questionText = 'Select the correct reading (Romaji) and Meaning for this Kanji:';
-                // Using .trim() for clean data output
-                questionInfo.context = `Kanji: ${correctRow.Kanji.trim()}\nSentence: ${correctRow['Japanese Sentence'].trim()}`;
-
-                // Correct Answer (Combined string: romaji - meaning)
-                const correctAnswerString = `${correctRow.Romaji.trim()} - ${correctRow.Meaning.trim()}`;
-                questionInfo.correctAnswer = correctAnswerString;
-                questionInfo.answers = [correctAnswerString];
-
-            } else {
-                // --- Existing Vocabulary Quiz Logic (Old) ---
-                if (csvData.length < 4) return null;
-
-                const questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
-
-                questionInfo.questionText = questionType.question;
-                questionInfo.correctAnswer = correctRow[questionType.answerKey];
-                questionInfo.answers = [questionInfo.correctAnswer];
-
-                let questionContext = '';
-                if (questionType.type === 'hiragana') {
-                    questionContext = `Romaji: ${correctRow.Romaji}\nMeaning: ${correctRow.Meaning}`;
-                } else if (questionType.type === 'romaji') {
-                    questionContext = `Hiragana: ${correctRow.Hiragana}\nMeaning: ${correctRow.Meaning}`;
-                } else {
-                    questionContext = `Hiragana: ${correctRow.Hiragana}\nRomaji: ${correctRow.Romaji}`;
-                }
-
-                if (correctRow['Example 1 JP'] && correctRow['Example 1 EN']) {
-                    questionContext += `\n\nExample: ${correctRow['Example 1 JP']} (${correctRow['Example 1 EN']})`;
-                }
-                questionInfo.context = questionContext;
-            }
-
-            // --- Generate Distractors (Common Logic) ---
-            const usedIndices = new Set([correctIndex]);
-
-            while (questionInfo.answers.length < numberOfDistractors + 1) {
-                const randomIndex = Math.floor(Math.random() * csvData.length);
-                const randomRow = csvData[randomIndex];
-
-                // Ensure we don't pick the same row index
-                if (usedIndices.has(randomIndex)) {
-                    continue;
-                }
-
-                let wrongAnswerString;
-
-                if (kanjiQuiz) {
-                    // Generate a Romaji - Meaning distractor
-                    wrongAnswerString = `${randomRow.Romaji.trim()} - ${randomRow.Meaning.trim()}`;
-
-                    // Check if the generated option is already one of the answers or the correct answer
-                    if (wrongAnswerString !== questionInfo.correctAnswer && !questionInfo.answers.includes(wrongAnswerString)) {
-                        questionInfo.answers.push(wrongAnswerString);
-                        usedIndices.add(randomIndex);
-                    }
-
-                } else {
-                    // Generate a distractor using the same answerKey as the question type (for old format)
-                    const questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
-                    wrongAnswerString = randomRow[questionType.answerKey];
-
-                    // Check if the generated option is already one of the answers or the correct answer
-                    if (wrongAnswerString !== questionInfo.correctAnswer && !questionInfo.answers.includes(wrongAnswerString)) {
-                        questionInfo.answers.push(wrongAnswerString);
-                        usedIndices.add(randomIndex);
-                    }
-                }
-
-                // Safety break for extremely small or duplicate-heavy datasets
-                if (usedIndices.size >= csvData.length && questionInfo.answers.length < numberOfDistractors + 1) {
-                    break;
-                }
-            }
-
-            // Shuffle answers before returning
-            questionInfo.answers.sort(() => Math.random() - 0.5);
-
-            return {
-                questionText: questionInfo.questionText,
-                context: questionInfo.context,
-                answers: questionInfo.answers,
-                correctAnswer: questionInfo.correctAnswer,
-                correctRow: correctRow
-            };
-        }
-
-        function startQuiz() {
-            if (csvData.length < 4) {
-                alert('Please upload a CSV file with at least 4 entries to start the quiz.');
-                return;
-            }
-
-            const questionCountSelect = document.getElementById('questionCount');
-            const selectedCount = questionCountSelect.value;
-
-            if (selectedCount === 'all') {
-                totalQuestions = csvData.length;
-            } else {
-                totalQuestions = Math.min(parseInt(selectedCount), csvData.length);
-            }
-
-            console.log(`Starting quiz with ${totalQuestions} questions`);
-
-            isQuizStarted = true;
-            questionCount = 0;
-            score = 0;
-            quizComplete = false;
-
-            document.getElementById('quizStatus').classList.add('hidden');
-            document.getElementById('quizComplete').classList.add('hidden');
-            document.getElementById('questionCard').classList.remove('hidden');
-
-            nextQuestion();
-        }
-
-        function nextQuestion() {
-            currentQuestion = generateQuestion();
-            selectedAnswer = null;
-            showResult = false;
-
-            document.getElementById('questionText').textContent = currentQuestion.questionText;
-            document.getElementById('questionContext').textContent = currentQuestion.context;
-            document.getElementById('questionProgress').textContent = `Question ${questionCount + 1} of ${totalQuestions}`;
-            document.getElementById('scoreProgress').textContent = `Score: ${score}/${questionCount}`;
-            document.getElementById('progressFill').style.width = `${((questionCount + 1) / totalQuestions) * 100}%`;
-
-            const container = document.getElementById('answersContainer');
-            container.innerHTML = '';
-
-            currentQuestion.answers.forEach((answer, index) => {
-                const button = document.createElement('button');
-                button.className = 'answer-btn';
-                button.textContent = answer;
-                button.onclick = () => handleAnswerSelect(answer, button);
-                container.appendChild(button);
-            });
-
-            document.getElementById('nextButtonContainer').classList.add('hidden');
-        }
-
-        function handleAnswerSelect(answer, buttonElement) {
-            if (showResult) return;
-
-            selectedAnswer = answer;
-            showResult = true;
-
-            if (answer === currentQuestion.correctAnswer) {
-                score++;
-                buttonElement.classList.add('correct');
-                buttonElement.innerHTML = '✅ ' + answer;
-            } else {
-                buttonElement.classList.add('incorrect');
-                buttonElement.innerHTML = '❌ ' + answer;
 
                 const buttons = document.querySelectorAll('.answer-btn');
                 buttons.forEach(btn => {
-                    if (btn.textContent === currentQuestion.correctAnswer) {
-                        btn.classList.add('correct');
-                        btn.innerHTML = '✅ ' + btn.textContent;
-                    }
+                    btn.classList.add('disabled');
+                    btn.onclick = null;
                 });
+
+                document.getElementById('nextButtonContainer').classList.remove('hidden');
             }
 
-            const buttons = document.querySelectorAll('.answer-btn');
-            buttons.forEach(btn => {
-                btn.classList.add('disabled');
-                btn.onclick = null;
-            });
+            function handleNextQuestion() {
+                questionCount++;
 
-            document.getElementById('nextButtonContainer').classList.remove('hidden');
-        }
-
-        function handleNextQuestion() {
-            questionCount++;
-
-            if (questionCount >= totalQuestions) {
-                finishQuiz();
-            } else {
-                nextQuestion();
+                if (questionCount >= totalQuestions) {
+                    finishQuiz();
+                } else {
+                    nextQuestion();
+                }
             }
-        }
 
-        function finishQuiz() {
-            quizComplete = true;
-            isQuizStarted = false;
+            function finishQuiz() {
+                quizComplete = true;
+                isQuizStarted = false;
 
-            document.getElementById('questionCard').classList.add('hidden');
+                document.getElementById('questionCard').classList.add('hidden');
 
-            document.getElementById('quizComplete').classList.remove('hidden');
-            document.getElementById('finalScore').textContent = `${score}/${totalQuestions}`;
-            document.getElementById('percentageText').textContent = `You scored ${Math.round((score / totalQuestions) * 100)}%!`;
-        }
+                document.getElementById('quizComplete').classList.remove('hidden');
+                document.getElementById('finalScore').textContent = `${score}/${totalQuestions}`;
+                document.getElementById('percentageText').textContent = `You scored ${Math.round((score / totalQuestions) * 100)}%!`;
+            }
 
-        function resetQuiz() {
-            csvData = [];
-            isQuizStarted = false;
-            quizComplete = false;
-            currentQuestion = null;
-            selectedAnswer = null;
-            showResult = false;
-            score = 0;
-            questionCount = 0;
+            // function resetQuiz() {
+            //     csvData = [];
+            //     isQuizStarted = false;
+            //     quizComplete = false;
+            //     currentQuestion = null;
+            //     selectedAnswer = null;
+            //     showResult = false;
+            //     score = 0;
+            //     questionCount = 0;
 
-            document.getElementById('loadingSection').classList.remove('hidden');
-            document.getElementById('quizStatus').classList.add('hidden');
-            document.getElementById('quizComplete').classList.add('hidden');
-            document.getElementById('questionCard').classList.add('hidden');
+            //     document.getElementById('loadingSection').classList.remove('hidden');
+            //     document.getElementById('quizStatus').classList.add('hidden');
+            //     document.getElementById('quizComplete').classList.add('hidden');
+            //     document.getElementById('questionCard').classList.add('hidden');
 
-            document.getElementById('fileInput').value = '';
-            document.getElementById('csvFileSelect').value = '';
-        }
-    </script>
+            //     document.getElementById('fileInput').value = '';
+            //     document.getElementById('csvFileSelect').value = '';
+            // }
+
+            function resetQuiz() {
+                csvData = [];
+                quizPool = [];
+                isQuizStarted = false;
+                quizComplete = false;
+                currentQuestion = null;
+                selectedAnswer = null;
+                showResult = false;
+                score = 0;
+                questionCount = 0;
+
+                document.getElementById('loadingSection').classList.remove('hidden');
+                document.getElementById('quizStatus').classList.add('hidden');
+                document.getElementById('quizComplete').classList.add('hidden');
+                document.getElementById('questionCard').classList.add('hidden');
+                document.getElementById('filterContainer').classList.add('hidden'); // Hide filters
+                document.getElementById('checkboxGrid').innerHTML = ''; // Clear checkboxes
+
+                document.getElementById('fileInput').value = '';
+                document.getElementById('csvFileSelect').value = '';
+            }
+        </script>
 </body>
 
 </html>
