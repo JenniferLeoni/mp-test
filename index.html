@@ -403,6 +403,14 @@
             let isQuizStarted = false;
             let quizComplete = false;
 
+            // Helper to randomize the order of questions
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+            }
+
 
             const questionTypes = [
                 { type: 'hiragana', question: 'What is the Hiragana for this?', answerKey: 'Hiragana' },
@@ -614,144 +622,96 @@
                 reader.readAsText(file);
             }
 
-            // function generateQuestion() {
-            //     if (csvData.length < 4) return null;
 
-            //     const correctIndex = Math.floor(Math.random() * csvData.length);
-            //     const correctRow = csvData[correctIndex];
-
-            //     const questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
-
-            //     const wrongAnswers = [];
-            //     const usedIndices = new Set([correctIndex]);
-
-            //     while (wrongAnswers.length < 3) {
-            //         const randomIndex = Math.floor(Math.random() * csvData.length);
-            //         if (!usedIndices.has(randomIndex)) {
-            //             wrongAnswers.push(csvData[randomIndex][questionType.answerKey]);
-            //             usedIndices.add(randomIndex);
-            //         }
-            //     }
-
-            //     const allAnswers = [correctRow[questionType.answerKey], ...wrongAnswers];
-            //     const shuffledAnswers = allAnswers.sort(() => Math.random() - 0.5);
-
-            //     let questionContext = '';
-            //     if (questionType.type === 'hiragana') {
-            //         questionContext = `Romaji: ${correctRow.Romaji}\nMeaning: ${correctRow.Meaning}`;
-            //     } else if (questionType.type === 'romaji') {
-            //         questionContext = `Hiragana: ${correctRow.Hiragana}\nMeaning: ${correctRow.Meaning}`;
-            //     } else {
-            //         questionContext = `Hiragana: ${correctRow.Hiragana}\nRomaji: ${correctRow.Romaji}`;
-            //     }
-
-            //     if (correctRow['Example 1 JP'] && correctRow['Example 1 EN']) {
-            //         questionContext += `\n\nExample: ${correctRow['Example 1 JP']} (${correctRow['Example 1 EN']})`;
-            //     }
-
-            //     return {
-            //         questionText: questionType.question,
-            //         context: questionContext,
-            //         answers: shuffledAnswers,
-            //         correctAnswer: correctRow[questionType.answerKey],
-            //         correctRow: correctRow
-            //     };
-            // }
 
             // function generateQuestion() {
-            //     if (csvData.length < 2) return null;
+            //     if (quizPool.length < 1) return null;
 
+            //     // Detect Quiz Type
             //     const kanjiQuiz = isKanjiQuiz(csvData);
+            //     const sentenceQuiz = isSentenceQuiz(csvData);
 
-            //     const correctIndex = Math.floor(Math.random() * csvData.length);
-            //     const correctRow = csvData[correctIndex];
+            //     // Pick Correct Answer from the FILTERED POOL (quizPool)
+            //     const correctIndex = Math.floor(Math.random() * quizPool.length);
+            //     const correctRow = quizPool[correctIndex];
 
             //     let questionInfo = {};
+            //     const numberOfDistractors = (kanjiQuiz || sentenceQuiz) ? 3 : 3;
 
-            //     // Determine number of options: 6 for Kanji, 4 for Vocabulary/Hira Kata
-            //     const numberOfDistractors = kanjiQuiz ? 5 : 3;
+            //     // --- NEW: Sentence Quiz Logic ---
+            //     if (sentenceQuiz) {
+            //         questionInfo.questionText = 'Select the correct Reading and Meaning for this sentence:';
+            //         // Display the Japanese sentence
+            //         questionInfo.context = correctRow['Japanese sentence'] || correctRow['Japanese Sentence'];
 
-            //     if (kanjiQuiz) {
-            //         // --- Kanji Quiz Logic (New) ---
-            //         if (csvData.length < 6) return null; // Need at least 6 entries for 6 options
-
-            //         questionInfo.questionText = 'Select the correct reading (Romaji) and Meaning for this Kanji:';
-            //         // Using .trim() for clean data output
-            //         questionInfo.context = `Kanji: ${correctRow.Kanji.trim()}\nSentence: ${correctRow['Japanese Sentence'].trim()}`;
-
-            //         // Correct Answer (Combined string: romaji - meaning)
-            //         const correctAnswerString = `${correctRow.Romaji.trim()} - ${correctRow.Meaning.trim()}`;
+            //         // Correct Answer format: Romaji - Meaning
+            //         const correctAnswerString = `${correctRow.Romaji} - ${correctRow.Meaning}`;
             //         questionInfo.correctAnswer = correctAnswerString;
             //         questionInfo.answers = [correctAnswerString];
-
-            //     } else {
-            //         // --- Existing Vocabulary Quiz Logic (Old) ---
-            //         if (csvData.length < 4) return null;
-
+            //     }
+            //     // --- Existing Kanji Logic ---
+            //     else if (kanjiQuiz) {
+            //         questionInfo.questionText = 'Select the correct reading (Romaji) and Meaning for this Kanji:';
+            //         questionInfo.context = `Kanji: ${correctRow.Kanji}\nSentence: ${correctRow['Japanese Sentence']}`;
+            //         const correctAnswerString = `${correctRow.Romaji} - ${correctRow.Meaning}`;
+            //         questionInfo.correctAnswer = correctAnswerString;
+            //         questionInfo.answers = [correctAnswerString];
+            //     }
+            //     // --- Existing Vocab Logic ---
+            //     else {
             //         const questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
-
             //         questionInfo.questionText = questionType.question;
             //         questionInfo.correctAnswer = correctRow[questionType.answerKey];
             //         questionInfo.answers = [questionInfo.correctAnswer];
 
-            //         let questionContext = '';
-            //         if (questionType.type === 'hiragana') {
-            //             questionContext = `Romaji: ${correctRow.Romaji}\nMeaning: ${correctRow.Meaning}`;
-            //         } else if (questionType.type === 'romaji') {
-            //             questionContext = `Hiragana: ${correctRow.Hiragana}\nMeaning: ${correctRow.Meaning}`;
-            //         } else {
-            //             questionContext = `Hiragana: ${correctRow.Hiragana}\nRomaji: ${correctRow.Romaji}`;
-            //         }
+            //         let context = '';
+            //         if (questionType.type === 'hiragana') context = `Romaji: ${correctRow.Romaji}\nMeaning: ${correctRow.Meaning}`;
+            //         else if (questionType.type === 'romaji') context = `Hiragana: ${correctRow.Hiragana}\nMeaning: ${correctRow.Meaning}`;
+            //         else context = `Hiragana: ${correctRow.Hiragana}\nRomaji: ${correctRow.Romaji}`;
 
-            //         if (correctRow['Example 1 JP'] && correctRow['Example 1 EN']) {
-            //             questionContext += `\n\nExample: ${correctRow['Example 1 JP']} (${correctRow['Example 1 EN']})`;
-            //         }
-            //         questionInfo.context = questionContext;
+            //         questionInfo.context = context;
             //     }
 
-            //     // --- Generate Distractors (Common Logic) ---
-            //     const usedIndices = new Set([correctIndex]);
+            //     // --- Generate Distractors (Randomized from FULL csvData) ---
+            //     // Note: Distractors come from the entire file, not just the selected chapter, to make it harder.
+            //     const usedAnswers = new Set([questionInfo.correctAnswer]);
 
             //     while (questionInfo.answers.length < numberOfDistractors + 1) {
             //         const randomIndex = Math.floor(Math.random() * csvData.length);
             //         const randomRow = csvData[randomIndex];
 
-            //         // Ensure we don't pick the same row index
-            //         if (usedIndices.has(randomIndex)) {
-            //             continue;
-            //         }
-
             //         let wrongAnswerString;
 
-            //         if (kanjiQuiz) {
-            //             // Generate a Romaji - Meaning distractor
-            //             wrongAnswerString = `${randomRow.Romaji.trim()} - ${randomRow.Meaning.trim()}`;
-
-            //             // Check if the generated option is already one of the answers or the correct answer
-            //             if (wrongAnswerString !== questionInfo.correctAnswer && !questionInfo.answers.includes(wrongAnswerString)) {
-            //                 questionInfo.answers.push(wrongAnswerString);
-            //                 usedIndices.add(randomIndex);
-            //             }
-
+            //         if (sentenceQuiz || kanjiQuiz) {
+            //             wrongAnswerString = `${randomRow.Romaji} - ${randomRow.Meaning}`;
             //         } else {
-            //             // Generate a distractor using the same answerKey as the question type (for old format)
-            //             const questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
-            //             wrongAnswerString = randomRow[questionType.answerKey];
-
-            //             // Check if the generated option is already one of the answers or the correct answer
-            //             if (wrongAnswerString !== questionInfo.correctAnswer && !questionInfo.answers.includes(wrongAnswerString)) {
-            //                 questionInfo.answers.push(wrongAnswerString);
-            //                 usedIndices.add(randomIndex);
+            //             // For vocab, try to match the question type's answer key if possible, 
+            //             // or just fallback to simple random logic (simplified here)
+            //             // To keep logic simple and consistent with your old code:
+            //             // We need to know the question type key used above. 
+            //             // Since we didn't store it for vocab in this scope, we re-derive or simplify.
+            //             // For safety in this specific "replace" block, let's just grab the same field as correct answer if valid
+            //             // Or roughly estimate based on content.
+            //             // BETTER APPROACH for Vocab: 
+            //             if (!sentenceQuiz && !kanjiQuiz) {
+            //                 // We re-check keys to find a mismatching string
+            //                 const possibleKeys = ['Hiragana', 'Romaji', 'Meaning'];
+            //                 // Try to find which key holds the correct answer to pick a distractor of same type
+            //                 const key = possibleKeys.find(k => correctRow[k] === questionInfo.correctAnswer);
+            //                 wrongAnswerString = randomRow[key || 'Meaning'];
             //             }
             //         }
 
-            //         // Safety break for extremely small or duplicate-heavy datasets
-            //         if (usedIndices.size >= csvData.length && questionInfo.answers.length < numberOfDistractors + 1) {
-            //             break;
+            //         if (!usedAnswers.has(wrongAnswerString)) {
+            //             questionInfo.answers.push(wrongAnswerString);
+            //             usedAnswers.add(wrongAnswerString);
             //         }
+
+            //         // Safety break
+            //         if (usedAnswers.size >= csvData.length && questionInfo.answers.length < numberOfDistractors + 1) break;
+            //         if (questionInfo.answers.length >= 20) break; // Infinite loop guard
             //     }
 
-            //     // Shuffle answers before returning
             //     questionInfo.answers.sort(() => Math.random() - 0.5);
 
             //     return {
@@ -763,7 +723,6 @@
             //     };
             // }
 
-
             function generateQuestion() {
                 if (quizPool.length < 1) return null;
 
@@ -771,25 +730,22 @@
                 const kanjiQuiz = isKanjiQuiz(csvData);
                 const sentenceQuiz = isSentenceQuiz(csvData);
 
-                // Pick Correct Answer from the FILTERED POOL (quizPool)
-                const correctIndex = Math.floor(Math.random() * quizPool.length);
-                const correctRow = quizPool[correctIndex];
+                // === CHANGED: Pick the next question from the shuffled pool sequentially ===
+                const correctRow = quizPool[questionCount];
+                // =========================================================================
 
                 let questionInfo = {};
                 const numberOfDistractors = (kanjiQuiz || sentenceQuiz) ? 3 : 3;
 
-                // --- NEW: Sentence Quiz Logic ---
+                // --- Sentence Quiz Logic ---
                 if (sentenceQuiz) {
                     questionInfo.questionText = 'Select the correct Reading and Meaning for this sentence:';
-                    // Display the Japanese sentence
                     questionInfo.context = correctRow['Japanese sentence'] || correctRow['Japanese Sentence'];
-
-                    // Correct Answer format: Romaji - Meaning
                     const correctAnswerString = `${correctRow.Romaji} - ${correctRow.Meaning}`;
                     questionInfo.correctAnswer = correctAnswerString;
                     questionInfo.answers = [correctAnswerString];
                 }
-                // --- Existing Kanji Logic ---
+                // --- Kanji Logic ---
                 else if (kanjiQuiz) {
                     questionInfo.questionText = 'Select the correct reading (Romaji) and Meaning for this Kanji:';
                     questionInfo.context = `Kanji: ${correctRow.Kanji}\nSentence: ${correctRow['Japanese Sentence']}`;
@@ -797,7 +753,7 @@
                     questionInfo.correctAnswer = correctAnswerString;
                     questionInfo.answers = [correctAnswerString];
                 }
-                // --- Existing Vocab Logic ---
+                // --- Vocab Logic ---
                 else {
                     const questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
                     questionInfo.questionText = questionType.question;
@@ -812,8 +768,7 @@
                     questionInfo.context = context;
                 }
 
-                // --- Generate Distractors (Randomized from FULL csvData) ---
-                // Note: Distractors come from the entire file, not just the selected chapter, to make it harder.
+                // --- Generate Distractors (Still Randomized from FULL csvData) ---
                 const usedAnswers = new Set([questionInfo.correctAnswer]);
 
                 while (questionInfo.answers.length < numberOfDistractors + 1) {
@@ -825,31 +780,20 @@
                     if (sentenceQuiz || kanjiQuiz) {
                         wrongAnswerString = `${randomRow.Romaji} - ${randomRow.Meaning}`;
                     } else {
-                        // For vocab, try to match the question type's answer key if possible, 
-                        // or just fallback to simple random logic (simplified here)
-                        // To keep logic simple and consistent with your old code:
-                        // We need to know the question type key used above. 
-                        // Since we didn't store it for vocab in this scope, we re-derive or simplify.
-                        // For safety in this specific "replace" block, let's just grab the same field as correct answer if valid
-                        // Or roughly estimate based on content.
-                        // BETTER APPROACH for Vocab: 
-                        if (!sentenceQuiz && !kanjiQuiz) {
-                            // We re-check keys to find a mismatching string
-                            const possibleKeys = ['Hiragana', 'Romaji', 'Meaning'];
-                            // Try to find which key holds the correct answer to pick a distractor of same type
-                            const key = possibleKeys.find(k => correctRow[k] === questionInfo.correctAnswer);
-                            wrongAnswerString = randomRow[key || 'Meaning'];
-                        }
+                        // Simplified vocab distractor logic
+                        const possibleKeys = ['Hiragana', 'Romaji', 'Meaning'];
+                        // Try to guess the key type based on the correct answer or default to Meaning
+                        let key = possibleKeys.find(k => correctRow[k] === questionInfo.correctAnswer) || 'Meaning';
+                        wrongAnswerString = randomRow[key];
                     }
 
-                    if (!usedAnswers.has(wrongAnswerString)) {
+                    if (wrongAnswerString && !usedAnswers.has(wrongAnswerString)) {
                         questionInfo.answers.push(wrongAnswerString);
                         usedAnswers.add(wrongAnswerString);
                     }
 
-                    // Safety break
                     if (usedAnswers.size >= csvData.length && questionInfo.answers.length < numberOfDistractors + 1) break;
-                    if (questionInfo.answers.length >= 20) break; // Infinite loop guard
+                    if (questionInfo.answers.length >= 20) break;
                 }
 
                 questionInfo.answers.sort(() => Math.random() - 0.5);
@@ -862,6 +806,53 @@
                     correctRow: correctRow
                 };
             }
+            // function startQuiz() {
+            //     // 1. Apply Filters if it's a sentence quiz
+            //     if (isSentenceQuiz(csvData)) {
+            //         const checkboxes = document.querySelectorAll('.filter-checkbox:checked');
+            //         const selectedKeys = new Set(Array.from(checkboxes).map(cb => cb.value));
+
+            //         if (selectedKeys.size === 0) {
+            //             alert('Please select at least one chapter/section to study!');
+            //             return;
+            //         }
+
+            //         quizPool = csvData.filter(row => {
+            //             const sec = row.section ? row.section.trim() : '';
+            //             const chap = row.chapter ? row.chapter.trim() : '';
+            //             const key = `${sec}|${chap}`;
+            //             return selectedKeys.has(key);
+            //         });
+            //     } else {
+            //         quizPool = [...csvData]; // Use everything for standard quizzes
+            //     }
+
+            //     if (quizPool.length < 4) {
+            //         alert(`Not enough questions available in selected sections (Found: ${quizPool.length}). Select more sections or upload a larger file.`);
+            //         return;
+            //     }
+
+            //     // 2. Set Question Counts based on quizPool size
+            //     const questionCountSelect = document.getElementById('questionCount');
+            //     const selectedCount = questionCountSelect.value;
+
+            //     if (selectedCount === 'all') {
+            //         totalQuestions = quizPool.length;
+            //     } else {
+            //         totalQuestions = Math.min(parseInt(selectedCount), quizPool.length);
+            //     }
+
+            //     isQuizStarted = true;
+            //     questionCount = 0;
+            //     score = 0;
+            //     quizComplete = false;
+
+            //     document.getElementById('quizStatus').classList.add('hidden');
+            //     document.getElementById('quizComplete').classList.add('hidden');
+            //     document.getElementById('questionCard').classList.remove('hidden');
+
+            //     nextQuestion();
+            // }
 
             function startQuiz() {
                 // 1. Apply Filters if it's a sentence quiz
@@ -885,11 +876,14 @@
                 }
 
                 if (quizPool.length < 4) {
-                    alert(`Not enough questions available in selected sections (Found: ${quizPool.length}). Select more sections or upload a larger file.`);
+                    alert(`Not enough questions available (Found: ${quizPool.length}).`);
                     return;
                 }
 
-                // 2. Set Question Counts based on quizPool size
+                // === NEW: Shuffle the pool so the order is randomized ===
+                shuffleArray(quizPool);
+
+                // 2. Set Question Counts
                 const questionCountSelect = document.getElementById('questionCount');
                 const selectedCount = questionCountSelect.value;
 
@@ -897,6 +891,8 @@
                     totalQuestions = quizPool.length;
                 } else {
                     totalQuestions = Math.min(parseInt(selectedCount), quizPool.length);
+                    // Reduce the pool to the exact number of questions we need
+                    quizPool = quizPool.slice(0, totalQuestions);
                 }
 
                 isQuizStarted = true;
@@ -910,35 +906,6 @@
 
                 nextQuestion();
             }
-
-            // function startQuiz() {
-            //     if (csvData.length < 4) {
-            //         alert('Please upload a CSV file with at least 4 entries to start the quiz.');
-            //         return;
-            //     }
-
-            //     const questionCountSelect = document.getElementById('questionCount');
-            //     const selectedCount = questionCountSelect.value;
-
-            //     if (selectedCount === 'all') {
-            //         totalQuestions = csvData.length;
-            //     } else {
-            //         totalQuestions = Math.min(parseInt(selectedCount), csvData.length);
-            //     }
-
-            //     console.log(`Starting quiz with ${totalQuestions} questions`);
-
-            //     isQuizStarted = true;
-            //     questionCount = 0;
-            //     score = 0;
-            //     quizComplete = false;
-
-            //     document.getElementById('quizStatus').classList.add('hidden');
-            //     document.getElementById('quizComplete').classList.add('hidden');
-            //     document.getElementById('questionCard').classList.remove('hidden');
-
-            //     nextQuestion();
-            // }
 
             function nextQuestion() {
                 currentQuestion = generateQuestion();
