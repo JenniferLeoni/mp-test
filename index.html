@@ -248,6 +248,27 @@
             padding: 0 10px;
             font-weight: 600;
         }
+
+        /* New styles for split options */
+        .dual-grid-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .column-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+            color: #555;
+        }
+
+        .answer-btn.selected-part {
+            border-color: #2196f3;
+            background: #e3f2fd;
+            box-shadow: 0 0 8px rgba(33, 150, 243, 0.3);
+        }
     </style>
 </head>
 
@@ -290,8 +311,6 @@
 
             <!-- Quiz Status -->
             <div id="quizStatus" class="text-center hidden">
-                <p class="success-msg mb-20" id="statusText"></p>
-
                 <p class="success-msg mb-20" id="statusText"></p>
 
                 <div id="filterContainer" class="hidden"
@@ -726,85 +745,86 @@
             function generateQuestion() {
                 if (quizPool.length < 1) return null;
 
-                // Detect Quiz Type
                 const kanjiQuiz = isKanjiQuiz(csvData);
                 const sentenceQuiz = isSentenceQuiz(csvData);
-
-                // === CHANGED: Pick the next question from the shuffled pool sequentially ===
                 const correctRow = quizPool[questionCount];
-                // =========================================================================
 
-                let questionInfo = {};
-                const numberOfDistractors = (kanjiQuiz || sentenceQuiz) ? 3 : 3;
+                let questionInfo = {
+                    questionText: '',
+                    context: '',
+                    answers: [],
+                    correctAnswer: '',
+                    correctReading: '',
+                    correctMeaning: '',
+                    readingAnswers: [],
+                    meaningAnswers: []
+                };
 
-                // --- Sentence Quiz Logic ---
+                // --- CASE 1: Sentence Quiz (The Split Dual-Column Logic) ---
                 if (sentenceQuiz) {
-                    questionInfo.questionText = 'Select the correct Reading and Meaning for this sentence:';
+                    questionInfo.questionText = 'Select the correct Reading and Meaning:';
                     questionInfo.context = correctRow['Japanese sentence'] || correctRow['Japanese Sentence'];
-                    const correctAnswerString = `${correctRow.Romaji} - ${correctRow.Meaning}`;
-                    questionInfo.correctAnswer = correctAnswerString;
-                    questionInfo.answers = [correctAnswerString];
+                    questionInfo.correctReading = correctRow.Romaji;
+                    questionInfo.correctMeaning = correctRow.Meaning;
+
+                    let readingOptions = [correctRow.Romaji];
+                    let meaningOptions = [correctRow.Meaning];
+
+                    while (readingOptions.length < 6) {
+                        let rand = csvData[Math.floor(Math.random() * csvData.length)];
+                        if (!readingOptions.includes(rand.Romaji)) readingOptions.push(rand.Romaji);
+                        if (!meaningOptions.includes(rand.Meaning)) meaningOptions.push(rand.Meaning);
+                    }
+
+                    questionInfo.readingAnswers = readingOptions.sort(() => Math.random() - 0.5);
+                    questionInfo.meaningAnswers = meaningOptions.sort(() => Math.random() - 0.5);
+
+                    return questionInfo; // Exit early for sentence quiz
                 }
-                // --- Kanji Logic ---
+
+                // --- CASE 2: Kanji Quiz ---
                 else if (kanjiQuiz) {
                     questionInfo.questionText = 'Select the correct reading (Romaji) and Meaning for this Kanji:';
                     questionInfo.context = `Kanji: ${correctRow.Kanji}\nSentence: ${correctRow['Japanese Sentence']}`;
-                    const correctAnswerString = `${correctRow.Romaji} - ${correctRow.Meaning}`;
-                    questionInfo.correctAnswer = correctAnswerString;
-                    questionInfo.answers = [correctAnswerString];
+                    questionInfo.correctAnswer = `${correctRow.Romaji} - ${correctRow.Meaning}`;
+                    questionInfo.answers = [questionInfo.correctAnswer];
                 }
-                // --- Vocab Logic ---
+
+                // --- CASE 3: Standard Vocab Quiz ---
                 else {
                     const questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
                     questionInfo.questionText = questionType.question;
                     questionInfo.correctAnswer = correctRow[questionType.answerKey];
                     questionInfo.answers = [questionInfo.correctAnswer];
 
-                    let context = '';
-                    if (questionType.type === 'hiragana') context = `Romaji: ${correctRow.Romaji}\nMeaning: ${correctRow.Meaning}`;
-                    else if (questionType.type === 'romaji') context = `Hiragana: ${correctRow.Hiragana}\nMeaning: ${correctRow.Meaning}`;
-                    else context = `Hiragana: ${correctRow.Hiragana}\nRomaji: ${correctRow.Romaji}`;
-
-                    questionInfo.context = context;
+                    if (questionType.type === 'hiragana')
+                        questionInfo.context = `Romaji: ${correctRow.Romaji}\nMeaning: ${correctRow.Meaning}`;
+                    else if (questionType.type === 'romaji')
+                        questionInfo.context = `Hiragana: ${correctRow.Hiragana}\nMeaning: ${correctRow.Meaning}`;
+                    else
+                        questionInfo.context = `Hiragana: ${correctRow.Hiragana}\nRomaji: ${correctRow.Romaji}`;
                 }
 
-                // --- Generate Distractors (Still Randomized from FULL csvData) ---
-                const usedAnswers = new Set([questionInfo.correctAnswer]);
+                // --- Generate Distractors for Kanji and Vocab only ---
+                while (questionInfo.answers.length < 4) {
+                    const randomRow = csvData[Math.floor(Math.random() * csvData.length)];
+                    let wrongAnswer;
 
-                while (questionInfo.answers.length < numberOfDistractors + 1) {
-                    const randomIndex = Math.floor(Math.random() * csvData.length);
-                    const randomRow = csvData[randomIndex];
-
-                    let wrongAnswerString;
-
-                    if (sentenceQuiz || kanjiQuiz) {
-                        wrongAnswerString = `${randomRow.Romaji} - ${randomRow.Meaning}`;
+                    if (kanjiQuiz) {
+                        wrongAnswer = `${randomRow.Romaji} - ${randomRow.Meaning}`;
                     } else {
-                        // Simplified vocab distractor logic
                         const possibleKeys = ['Hiragana', 'Romaji', 'Meaning'];
-                        // Try to guess the key type based on the correct answer or default to Meaning
                         let key = possibleKeys.find(k => correctRow[k] === questionInfo.correctAnswer) || 'Meaning';
-                        wrongAnswerString = randomRow[key];
+                        wrongAnswer = randomRow[key];
                     }
 
-                    if (wrongAnswerString && !usedAnswers.has(wrongAnswerString)) {
-                        questionInfo.answers.push(wrongAnswerString);
-                        usedAnswers.add(wrongAnswerString);
+                    if (wrongAnswer && !questionInfo.answers.includes(wrongAnswer)) {
+                        questionInfo.answers.push(wrongAnswer);
                     }
-
-                    if (usedAnswers.size >= csvData.length && questionInfo.answers.length < numberOfDistractors + 1) break;
-                    if (questionInfo.answers.length >= 20) break;
                 }
 
                 questionInfo.answers.sort(() => Math.random() - 0.5);
-
-                return {
-                    questionText: questionInfo.questionText,
-                    context: questionInfo.context,
-                    answers: questionInfo.answers,
-                    correctAnswer: questionInfo.correctAnswer,
-                    correctRow: correctRow
-                };
+                return questionInfo;
             }
             // function startQuiz() {
             //     // 1. Apply Filters if it's a sentence quiz
@@ -907,9 +927,13 @@
                 nextQuestion();
             }
 
+            let selectedReading = null;
+            let selectedMeaning = null;
+
             function nextQuestion() {
                 currentQuestion = generateQuestion();
-                selectedAnswer = null;
+                selectedReading = null;
+                selectedMeaning = null;
                 showResult = false;
 
                 document.getElementById('questionText').textContent = currentQuestion.questionText;
@@ -921,15 +945,89 @@
                 const container = document.getElementById('answersContainer');
                 container.innerHTML = '';
 
-                currentQuestion.answers.forEach((answer, index) => {
-                    const button = document.createElement('button');
-                    button.className = 'answer-btn';
-                    button.textContent = answer;
-                    button.onclick = () => handleAnswerSelect(answer, button);
-                    container.appendChild(button);
-                });
+                if (isSentenceQuiz(csvData)) {
+                    // Create Two Columns
+                    const dualContainer = document.createElement('div');
+                    dualContainer.className = 'dual-grid-container';
+
+                    // Reading Column
+                    const col1 = document.createElement('div');
+                    col1.innerHTML = '<div class="column-title">Reading</div>';
+                    currentQuestion.readingAnswers.forEach(ans => {
+                        const btn = document.createElement('button');
+                        btn.className = 'answer-btn';
+                        btn.style.width = '100%';
+                        btn.style.marginBottom = '10px';
+                        btn.textContent = ans;
+                        btn.onclick = () => handleDualSelect(ans, btn, 'reading');
+                        col1.appendChild(btn);
+                    });
+
+                    // Meaning Column
+                    const col2 = document.createElement('div');
+                    col2.innerHTML = '<div class="column-title">Meaning</div>';
+                    currentQuestion.meaningAnswers.forEach(ans => {
+                        const btn = document.createElement('button');
+                        btn.className = 'answer-btn';
+                        btn.style.width = '100%';
+                        btn.style.marginBottom = '10px';
+                        btn.textContent = ans;
+                        btn.onclick = () => handleDualSelect(ans, btn, 'meaning');
+                        col2.appendChild(btn);
+                    });
+
+                    dualContainer.appendChild(col1);
+                    dualContainer.appendChild(col2);
+                    container.appendChild(dualContainer);
+                } else {
+                    // ... Keep your original standard vocab logic here ...
+                    currentQuestion.answers.forEach(answer => {
+                        const button = document.createElement('button');
+                        button.className = 'answer-btn';
+                        button.textContent = answer;
+                        button.onclick = () => handleAnswerSelect(answer, button);
+                        container.appendChild(button);
+                    });
+                }
 
                 document.getElementById('nextButtonContainer').classList.add('hidden');
+            }
+
+            // Replace your handleDualSelect function with this one
+            function handleDualSelect(value, btn, type) {
+                if (showResult) return;
+
+                // 1. Highlight the selection in the current column
+                const parent = btn.parentElement;
+                parent.querySelectorAll('.answer-btn').forEach(b => b.classList.remove('selected-part'));
+                btn.classList.add('selected-part');
+
+                if (type === 'reading') selectedReading = value;
+                if (type === 'meaning') selectedMeaning = value;
+
+                // 2. Only check accuracy if BOTH sides are picked
+                if (selectedReading && selectedMeaning) {
+                    showResult = true;
+                    const isCorrect = (selectedReading === currentQuestion.correctReading &&
+                        selectedMeaning === currentQuestion.correctMeaning);
+
+                    if (isCorrect) {
+                        score++;
+                        // Highlight both selections as green
+                        document.querySelectorAll('.selected-part').forEach(b => b.classList.add('correct'));
+                    } else {
+                        // Highlight incorrect ones red and show the right ones in green
+                        document.querySelectorAll('.answer-btn').forEach(b => {
+                            if (b.textContent === currentQuestion.correctReading ||
+                                b.textContent === currentQuestion.correctMeaning) {
+                                b.classList.add('correct');
+                            } else if (b.classList.contains('selected-part')) {
+                                b.classList.add('incorrect');
+                            }
+                        });
+                    }
+                    document.getElementById('nextButtonContainer').classList.remove('hidden');
+                }
             }
 
             function handleAnswerSelect(answer, buttonElement) {
