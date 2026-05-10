@@ -1,0 +1,339 @@
+﻿Japanese sentence,Romaji,Meaning,section,chapter
+人,hito,person,N5,1
+一,ichi,one,N5,1
+日,hi,day/sun,N5,1
+大,ookii,big,N5,1
+年,toshi,year,N5,1
+中,naka,inside,N5,1
+子,ko,child,N5,1
+見,miru,to see,N5,1
+国,kuni,country,N5,1
+上,ue,above,N5,1
+分,wakaru,to understand,N5,1
+生,ikiru,to live,N5,1
+行,iku,to go,N5,1
+二,ni,two,N5,1
+間,aida,between,N5,1
+時,toki,time,N5,1
+気,ki,spirit/feeling,N5,1
+十,juu,ten,N5,1
+女,onna,woman,N5,1
+三,san,three,N5,1
+前,mae,front/before,N5,1
+入,hairu,to enter,N5,1
+小,chiisai,small,N5,1
+後,ato,after/behind,N5,1
+長,nagai,long,N5,1
+下,shita,below,N5,1
+学,manabu,to learn,N5,1
+月,tsuki,moon/month,N5,1
+何,nani,what,N5,1
+来,kuru,to come,N5,1
+話,hanasu,to speak,N5,1
+山,yama,mountain,N5,1
+高,takai,high/expensive,N5,1
+今,ima,now,N5,1
+書,kaku,to write,N5,1
+五,go,five,N5,1
+名,na,name,N5,1
+金,kane,money/gold,N5,1
+男,otoko,man,N5,1
+外,soto,outside,N5,1
+四,yon,four,N5,1
+先,saki,ahead/previous,N5,1
+川,kawa,river,N5,1
+東,higashi,east,N5,1
+聞,kiku,to listen/hear,N5,1
+語,go,language/word,N5,1
+九,kyuu,nine,N5,1
+食,taberu,to eat,N5,1
+八,hachi,eight,N5,1
+水,mizu,water,N5,1
+天,ten,heaven/sky,N5,1
+木,ki,tree/wood,N5,1
+六,roku,six,N5,1
+万,man,ten thousand,N5,1
+白,shiro,white,N5,1
+七,nana,seven,N5,1
+円,en,yen/circle,N5,1
+電,den,electricity,N5,1
+父,chichi,father,N5,1
+北,kita,north,N5,1
+車,kuruma,car,N5,1
+母,haha,mother,N5,1
+半,han,half,N5,1
+百,hyaku,hundred,N5,1
+土,tsuchi,soil/earth,N5,1
+西,nishi,west,N5,1
+読,yomu,to read,N5,1
+千,sen,thousand,N5,1
+校,kou,school (suffix),N5,1
+右,migi,right,N5,1
+南,minami,south,N5,1
+左,hidari,left,N5,1
+友,tomo,friend,N5,1
+火,hi,fire,N5,1
+毎,mai,every,N5,1
+雨,ame,rain,N5,1
+休,yasumu,to rest,N5,1
+午,uma,noon (sign),N5,1
+言,iu,to say,N4,1
+手,te,hand,N4,1
+自,mizukara,self,N4,1
+者,mono,person (professional),N4,1
+事,koto,thing/matter,N4,1
+思,omou,to think,N4,1
+会,au,to meet,N4,1
+家,ie,house,N4,1
+的,teki,target/suffix -ish,N4,1
+方,kata,direction/person,N4,1
+地,chi,ground/earth,N4,1
+目,me,eye,N4,1
+場,ba,place,N4,1
+代,kawaru,substitute/generation,N4,1
+私,watashi,I/me,N4,1
+立,tatsu,to stand,N4,1
+物,mono,thing,N4,1
+田,ta,rice field,N4,1
+体,karada,body,N4,1
+動,ugoku,to move,N4,1
+社,yashiro,shrine/company,N4,1
+知,shiru,to know,N4,1
+理,ri,reason/logic,N4,1
+同,onaji,same,N4,1
+心,kokoro,heart/mind,N4,1
+発,tatsu,departure/emit,N4,1
+作,tsukuru,to make,N4,1
+新,atarashii,new,N4,1
+世,yo,world/generation,N4,1
+度,tabi,degree/time,N4,1
+明,akarui,bright,N4,1
+力,chikara,power,N4,1
+意,i,intention,N4,1
+用,mochiiru,to use,N4,1
+主,nushi,master/main,N4,1
+通,tooru,to pass through,N4,1
+文,fumi,sentence/text,N4,1
+屋,ya,shop/roof,N4,1
+業,waza,business/art,N4,1
+持,motsu,to hold,N4,1
+道,michi,way/road,N4,1
+身,mi,body/self,N4,1
+不,fu,not/negative prefix,N4,1
+口,kuchi,mouth,N4,1
+多,ooi,many,N4,1
+野,no,field,N4,1
+考,kangaeru,to think,N4,1
+開,akeru,to open,N4,1
+教,oshieru,to teach,N4,1
+近,chikai,near,N4,1
+以,i,prefix for limits,N4,1
+問,tou,question,N4,1
+正,tadashii,correct,N4,1
+真,ma,truth/pure,N4,1
+味,aji,taste,N4,1
+界,kai,world/boundary,N4,1
+無,nai,nothing,N4,1
+少,sukunai,few/little,N4,1
+海,umi,sea,N4,1
+切,kiru,to cut,N4,1
+重,omoi,heavy,N4,1
+集,atsumaru,to gather,N4,1
+員,in,member,N4,1
+公,kou,public,N4,1
+画,ga,picture/stroke,N4,1
+死,shinu,to die,N4,1
+安,yasui,cheap/peaceful,N4,1
+親,oya,parent/close,N4,1
+強,tsuyoi,strong,N4,1
+使,tsukau,to use,N4,1
+朝,asa,morning,N4,1
+題,dai,topic,N4,1
+仕,tsukaeru,to serve,N4,1
+京,kyou,capital,N4,1
+足,ashi,foot/leg,N4,1
+品,shina,item/goods,N4,1
+着,kiru,to wear/arrive,N4,1
+別,wakare,separate,N4,1
+音,oto,sound,N4,1
+元,moto,origin,N4,1
+特,toku,special,N4,1
+風,kaze,wind/style,N4,1
+夜,yoru,night,N4,1
+空,sora,sky,N4,1
+有,aru,to exist/have,N4,1
+起,okiru,to wake up,N4,1
+運,hakobu,to carry/luck,N4,1
+料,ryou,fee/material,N4,1
+楽,tanoshii,fun/easy,N4,1
+色,iro,color,N4,1
+帰,kaeru,to return,N4,1
+歩,aruku,to walk,N4,1
+悪,warui,bad,N4,1
+広,hiroi,wide,N4,1
+店,mise,shop,N4,1
+町,machi,town,N4,1
+住,sumu,to live/dwell,N4,1
+売,uru,to sell,N4,1
+待,matsu,to wait,N4,1
+古,furui,old,N4,1
+始,hajimeru,to start,N4,1
+終,owaru,to end,N4,1
+計,hakaru,to measure,N4,1
+院,in,institution/hospital,N4,1
+送,okuru,to send,N4,1
+族,zoku,tribe/family,N4,1
+映,utsusu,reflection/projection,N4,1
+買,kau,to buy,N4,1
+病,yamai,illness,N4,1
+早,hayai,early,N4,1
+質,shitsu,quality/matter,N4,1
+台,dai,stand/platform,N4,1
+室,shitsu,room,N4,1
+可,ka,possible/can,N4,1
+建,tateru,to build,N4,1
+転,korobu,to roll/turn,N4,1
+医,isha,doctor/medicine,N4,1
+止,tomaru,to stop,N4,1
+字,ji,character/letter,N4,1
+工,kou,construction/craft,N4,1
+急,isogu,to hurry,N4,1
+図,haka,diagram/map,N4,1
+黒,kuro,black,N4,1
+花,hana,flower,N4,1
+英,ei,England/superb,N4,1
+走,hashiru,to run,N4,1
+青,ao,blue,N4,1
+答,kotae,answer,N4,1
+紙,kami,paper,N4,1
+歌,uta,song,N4,1
+注,sosogu,pour/note,N4,1
+赤,aka,red,N4,1
+春,haru,spring,N4,1
+館,kan,hall/building,N4,1
+旅,tabi,travel,N4,1
+験,tamesu,test/exam,N4,1
+写,utsusu,to copy/photograph,N4,1
+去,saru,to leave/past,N4,1
+研,togu,to polish/research,N4,1
+飲,nomu,to drink,N4,1
+肉,niku,meat,N4,1
+服,fuku,clothes,N4,1
+銀,gin,silver,N4,1
+茶,cha,tea,N4,1
+究,kiwameru,research/extreme,N4,1
+洋,you,ocean/western,N4,1
+兄,ani,older brother,N4,1
+秋,aki,autumn,N4,1
+堂,dou,hall,N4,1
+週,shuu,week,N4,1
+習,narau,to learn,N4,1
+試,kokoromiru,to try/test,N4,1
+夏,natsu,summer,N4,1
+弟,otouto,younger brother,N4,1
+鳥,tori,bird,N4,1
+犬,inu,dog,N4,1
+夕,yuu,evening,N4,1
+魚,sakana,fish,N4,1
+借,kariru,to borrow,N4,1
+飯,meshi,meal/rice,N4,1
+駅,eki,station,N4,1
+昼,hiru,daytime/noon,N4,1
+冬,fuyu,winter,N4,1
+姉,ane,older sister,N4,1
+曜,you,day of week,N4,1
+漢,kan,China/Han,N4,1
+牛,ushi,cow,N4,1
+妹,imouto,younger sister,N4,1
+貸,kasu,to lend,N4,1
+勉,tsutomeru,exertion,N4,1
+学生,gakusei,student,N5,2
+日本人,nihonjin,Japanese person,N5,3
+会社,kaisha,company,N4,2
+仕事,shigoto,work/job,N4,2
+電話,denwa,telephone,N5,2
+電車,densha,train,N5,2
+時間,jikan,time,N5,2
+毎日,mainichi,every day,N5,2
+名前,namae,name,N5,2
+学校,gakkou,school,N5,2
+先生,sensei,teacher,N5,2
+会話,kaiwa,conversation,N4,2
+自動車,jidousha,automobile,N4,3
+図書館,toshokan,library,N4,3
+料理,ryouri,cooking,N4,2
+旅行,ryokou,travel,N4,2
+食事,shokuji,meal,N4,2
+注意,chuui,caution,N4,2
+勉強,benkyou,study,N4,2
+教室,kyoushitsu,classroom,N4,2
+世界,sekai,world,N4,2
+病院,byouin,hospital,N4,2
+外国人,gaikokujin,foreigner,N5,3
+地下鉄,chikatetsu,subway,N4,3
+質問,shitsumon,question,N4,2
+意味,imi,meaning,N4,2
+運動,undou,exercise,N4,2
+気分,kibun,mood,N5,2
+天気,tenki,weather,N5,2
+電気,denki,electricity,N5,2
+新聞,shinbun,newspaper,N4,2
+予定,yotei,plan,N4,2
+場所,basho,place,N4,2
+開始,kaishi,start,N4,2
+目的,mokuteki,purpose,N4,2
+兄弟,kyoudai,siblings,N4,2
+姉妹,shimai,sisters,N4,2
+今週,konshuu,this week,N4,2
+来週,raishuu,next week,N4,2
+先週,senshuu,last week,N4,2
+毎週,maishuu,every week,N4,2
+東京,toukyou,Tokyo,N4,2
+出口,deguchi,exit,N4,2
+入口,iriguchi,entrance,N4,2
+上手,jouzu,skillful,N4,2
+下手,heta,unskillful,N4,2
+建物,tatemono,building,N4,2
+牛肉,gyuuniku,beef,N4,2
+朝食,choushoku,breakfast,N4,2
+昼食,chuushoku,lunch,N4,2
+夕食,yuushoku,dinner,N4,2
+時計,tokei,clock/watch,N4,2
+自分,jibun,oneself,N4,2
+本屋,honya,bookstore,N4,2
+肉屋,nikuya,butcher shop,N4,2
+花屋,hanaya,flower shop,N4,2
+魚屋,sakanaya,fish shop,N4,2
+店員,tenin,shop assistant,N4,2
+会員,kaiin,member,N4,2
+公立,kouritsu,public institution,N4,2
+安心,anshin,relief,N4,2
+安全,anzen,safety,N4,2
+正月,shougatsu,New Year,N5,2
+去年,kyonen,last year,N5,2
+大学,daigaku,university,N5,2
+中学生,chuugakusei,junior high student,N5,3
+小学生,shougakusei,elementary student,N5,3
+高校生,koukousei,high school student,N5,3
+名前,namae,name,N5,2
+右足,migiashi,right foot,N4,2
+左足,hidariashi,left foot,N4,2
+空気,kuuki,air,N4,2
+意見,iken,opinion,N4,2
+用意,youi,preparation,N4,2
+水道,suidou,water supply,N4,2
+作文,sakubun,composition,N4,2
+発音,hatsuon,pronunciation,N4,2
+文字,moji,character/letter,N4,2
+漢字,kanji,Kanji,N4,2
+地図,chizu,map,N4,2
+地方,chihou,region,N4,2
+土地,tochi,land,N4,2
+地下,chika,underground,N4,2
+山道,yamamichi,mountain road,N4,2
+読書,dokusho,reading,N5,2
+見物,kenbutsu,sightseeing,N5,2
+特急,tokkyuu,limited express,N4,2
+急行,kyuukou,express,N4,2
+工場,koujou,factory,N4,2
+会合,kaigou,meeting,N4,2
