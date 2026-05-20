@@ -108,16 +108,11 @@
         .question-context {
             background: #f5f5f5;
             border-radius: 8px;
-            padding: 25px;
+            padding: 20px;
             margin: 20px 0;
-            font-size: 24px;
+            font-size: 32px;
             white-space: pre-wrap;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            text-align: center;
-            font-weight: bold;
-            color: #1a237e;
-            line-height: 1.5;
-            border-left: 5px solid #2196f3;
+            font-family: monospace;
         }
 
         .answers-grid {
@@ -136,18 +131,11 @@
             text-align: left;
             transition: all 0.2s;
             font-size: 20px;
-            width: 100%;
         }
 
         .answer-btn:hover {
             border-color: #2196f3;
             background: #e3f2fd;
-        }
-
-        .answer-btn.selected-part {
-            border-color: #2196f3;
-            background: #e3f2fd;
-            box-shadow: 0 0 8px rgba(33, 150, 243, 0.3);
         }
 
         .answer-btn.correct {
@@ -262,7 +250,7 @@
             font-weight: 600;
         }
 
-        /* Styles for split layout columns */
+        /* New styles for split options */
         .dual-grid-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -275,6 +263,12 @@
             margin-bottom: 10px;
             text-align: center;
             color: #555;
+        }
+
+        .answer-btn.selected-part {
+            border-color: #2196f3;
+            background: #e3f2fd;
+            box-shadow: 0 0 8px rgba(33, 150, 243, 0.3);
         }
     </style>
 </head>
@@ -289,7 +283,9 @@
                 Edit the <code>availableCSVFiles</code> array in the code to list your CSV files.
             </div>
 
+            <!-- File Selection Section -->
             <div id="loadingSection">
+                <!-- Select from available files -->
                 <div class="file-selector">
                     <label for="csvFileSelect">📁 Select a CSV file:</label>
                     <select id="csvFileSelect">
@@ -303,16 +299,18 @@
 
                 <div class="divider"><span>OR</span></div>
 
+                <!-- Upload custom file -->
                 <div class="upload-area" onclick="document.getElementById('fileInput').click()">
                     <div style="font-size: 48px; margin-bottom: 10px;">📤</div>
                     <div style="font-size: 18px; font-weight: 600; margin-bottom: 10px;">Upload your own CSV file</div>
-                    <p style="color: #666;">CSV should contain columns like: Hiragana, Romaji, Meaning (or Kanji and
-                        Sentence structures)</p>
+                    <p style="color: #666;">CSV should contain: Hiragana, Romaji, Meaning, Example 1 JP, Example 1 EN,
+                        Example 2 JP, Example 2 EN</p>
                     <input type="file" id="fileInput" accept=".csv" style="display: none;"
                         onchange="handleFileUpload(event)">
                 </div>
             </div>
 
+            <!-- Quiz Status -->
             <div id="quizStatus" class="text-center hidden">
                 <p class="success-msg mb-20" id="statusText"></p>
 
@@ -334,6 +332,8 @@
                 </div>
 
                 <div style="margin-bottom: 20px;">
+
+                    <!-- Question Count Selection -->
                     <div style="margin-bottom: 20px;">
                         <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #333;">
                             Number of Questions:
@@ -356,6 +356,7 @@
                     </button>
                 </div>
 
+                <!-- Quiz Complete -->
                 <div id="quizComplete" class="text-center hidden">
                     <h2 style="margin-bottom: 20px;">Quiz Complete! 🎉</h2>
                     <div class="score-display" id="finalScore"></div>
@@ -368,23 +369,29 @@
                 </div>
             </div>
 
+            <!-- Question Card -->
             <div id="questionCard" class="card hidden">
+                <!-- Progress -->
                 <div class="quiz-header">
                     <div id="questionProgress">Question 1 of 10</div>
                     <div id="scoreProgress">Score: 0/0</div>
                 </div>
 
+                <!-- Progress Bar -->
                 <div class="progress-bar">
                     <div class="progress-fill" id="progressFill" style="width: 10%"></div>
                 </div>
 
+                <!-- Question Content -->
                 <div style="margin-bottom: 30px;">
-                    <h3 id="questionText" style="margin-bottom: 10px; color: #333;"></h3>
+                    <h2 id="questionText" style="margin-bottom: 20px; font-size: 24px;"></h2>
                     <div id="questionContext" class="question-context"></div>
                 </div>
 
-                <div id="answersContainer"></div>
+                <!-- Answer Options -->
+                <div id="answersContainer" class="answers-grid"></div>
 
+                <!-- Next Button -->
                 <div id="nextButtonContainer" class="text-center hidden">
                     <button class="btn btn-primary" onclick="handleNextQuestion()" id="nextButton">Next
                         Question</button>
@@ -395,12 +402,14 @@
         <script>
             // ===== ADD YOUR CSV FILES HERE =====
             const availableCSVFiles = [
-                { name: "Japanese N5 Vocab", filename: "japanese n5 vocab.csv" },
                 { name: "Basic Vocabulary N5", filename: "Vocabulary.csv" },
                 { name: "Hira Kata", filename: "hirakata.csv" },
                 { name: "N5 Kanji", filename: "n5 kanji.csv" },
                 { name: "IRODORI 0", filename: "irodori.csv" },
                 { name: "N4 N5 Kanji", filename: "jlpt_n4_n5_hiragana_final.csv" }
+                // { name: "JLPT N4", filename: "jlpt_n4.csv" },
+                // { name: "Common Phrases", filename: "phrases.csv" },
+                // Add more files here following the same pattern
             ];
 
             // Global variables
@@ -415,9 +424,7 @@
             let isQuizStarted = false;
             let quizComplete = false;
 
-            let selectedReading = null;
-            let selectedMeaning = null;
-
+            // Helper to randomize the order of questions
             function shuffleArray(array) {
                 for (let i = array.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
@@ -425,18 +432,21 @@
                 }
             }
 
+
+            const questionTypes = [
+                { type: 'hiragana', question: 'What is the Hiragana for this?', answerKey: 'Hiragana' },
+                { type: 'romaji', question: 'What is the Romaji for this?', answerKey: 'Romaji' },
+                { type: 'meaning', question: 'What is the meaning?', answerKey: 'Meaning' }
+            ];
+
             function isKanjiQuiz(data) {
                 if (data.length === 0) return false;
+                // Check for the unique headers in the kanji CSV
                 const headers = Object.keys(data[0]);
-                return headers.includes('Kanji') && (headers.includes('Japanese Sentence') || headers.includes('Japanese sentence'));
+                return headers.includes('Kanji') && headers.includes('Japanese Sentence');
             }
 
-            function isSentenceQuiz(data) {
-                if (data.length === 0) return false;
-                const headers = Object.keys(data[0]);
-                return headers.includes('Japanese sentence') && !headers.includes('Kanji');
-            }
-
+            // Populate dropdown on page load
             window.addEventListener('load', () => {
                 const select = document.getElementById('csvFileSelect');
                 availableCSVFiles.forEach(file => {
@@ -466,24 +476,30 @@
                         alert(`Could not load ${filename}. Make sure the file is in the same directory as this HTML file.`);
                     }
                 } catch (error) {
-                    alert(`Error loading ${filename}: ${error.message}`);
+                    alert(`Error loading ${filename}: ${error.message}\n\nMake sure the file is in the same directory as this HTML file.`);
                 }
             }
 
+            // NEW: Check if CSV matches the new sentence format
+            function isSentenceQuiz(data) {
+                if (data.length === 0) return false;
+                const headers = Object.keys(data[0]);
+                // Check for specific columns in your new CSV
+                return headers.includes('Japanese sentence') && (headers.includes('section') || headers.includes('chapter'));
+            }
+
+            // NEW: Generate filter checkboxes based on CSV data
             function createFilters() {
                 const container = document.getElementById('filterContainer');
                 const grid = document.getElementById('checkboxGrid');
                 grid.innerHTML = '';
 
-                if (csvData.length === 0) return;
-                const headers = Object.keys(csvData[0]);
-                const hasFilters = headers.includes('section') || headers.includes('chapter');
-
-                if (!hasFilters) {
+                if (!isSentenceQuiz(csvData)) {
                     container.classList.add('hidden');
                     return;
                 }
 
+                // Get unique Section/Chapter combinations
                 const groups = new Set();
                 csvData.forEach(row => {
                     const sec = row.section ? row.section.trim() : '';
@@ -500,17 +516,13 @@
 
                 container.classList.remove('hidden');
 
-                Array.from(groups).sort((a, b) => {
-                    const numA = parseInt(a.split('|')[0]);
-                    const numB = parseInt(b.split('|')[0]);
-                    if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
-                    return a.localeCompare(b);
-                }).forEach(groupKey => {
+                // Sort and create checkboxes
+                Array.from(groups).sort().forEach(groupKey => {
                     const [sec, chap] = groupKey.split('|');
                     let labelText = '';
-                    if (sec && chap) labelText = `${chap} - Sec ${sec}`;
-                    else if (sec) labelText = `Section ${sec}`;
-                    else labelText = `${chap}`;
+                    if (sec && chap) labelText = `${sec} - Ch ${chap}`;
+                    else if (sec) labelText = sec;
+                    else labelText = `Chapter ${chap}`;
 
                     const wrapper = document.createElement('label');
                     wrapper.style.display = 'flex';
@@ -521,7 +533,7 @@
                     const checkbox = document.createElement('input');
                     checkbox.type = 'checkbox';
                     checkbox.value = groupKey;
-                    checkbox.checked = true;
+                    checkbox.checked = true; // Default to checked
                     checkbox.className = 'filter-checkbox';
                     checkbox.style.marginRight = '6px';
 
@@ -531,10 +543,54 @@
                 });
             }
 
+            // NEW: Helper to toggle all checkboxes
             function toggleAllFilters(checkState) {
                 const checkboxes = document.querySelectorAll('.filter-checkbox');
                 checkboxes.forEach(cb => cb.checked = checkState);
             }
+
+            // function parseCSV(text, filename = 'uploaded file') {
+            //     try {
+            //         const result = Papa.parse(text, {
+            //             header: true,
+            //             skipEmptyLines: true,
+            //             dynamicTyping: false,
+            //             delimitersToGuess: [',', '\t', '|', ';']
+            //         });
+
+            //         // Clean headers by trimming whitespace
+            //         const cleanedData = result.data.map(row => {
+            //             const cleanedRow = {};
+            //             Object.keys(row).forEach(key => {
+            //                 const cleanKey = key.trim();
+            //                 cleanedRow[cleanKey] = row[key];
+            //             });
+            //             return cleanedRow;
+            //         });
+
+            //         csvData = cleanedData;
+            //         console.log('CSV loaded:', csvData.length, 'entries from', filename);
+
+            //         // Show quiz status
+            //         document.getElementById('loadingSection').classList.add('hidden');
+            //         document.getElementById('quizStatus').classList.remove('hidden');
+            //         document.getElementById('statusText').textContent = `✅ CSV loaded: ${filename} (${csvData.length} entries)`;
+
+            //         // Set default question count based on data size
+            //         const questionCountSelect = document.getElementById('questionCount');
+            //         if (csvData.length <= 10) {
+            //             questionCountSelect.value = 'all';
+            //         } else if (csvData.length <= 20) {
+            //             questionCountSelect.value = '10';
+            //         } else {
+            //             questionCountSelect.value = '15';
+            //         }
+
+            //     } catch (error) {
+            //         console.error('Error parsing CSV:', error);
+            //         alert('Error parsing CSV file. Please check the format.');
+            //     }
+            // }
 
             function parseCSV(text, filename = 'uploaded file') {
                 try {
@@ -553,12 +609,15 @@
                     });
 
                     csvData = cleanedData;
-                    quizPool = [...csvData];
+                    quizPool = [...csvData]; // Initialize pool with everything
+
+                    console.log('CSV loaded:', csvData.length, 'entries');
 
                     document.getElementById('loadingSection').classList.add('hidden');
                     document.getElementById('quizStatus').classList.remove('hidden');
                     document.getElementById('statusText').textContent = `✅ CSV loaded: ${filename} (${csvData.length} entries)`;
 
+                    // Generate filters for the new type
                     createFilters();
 
                     const questionCountSelect = document.getElementById('questionCount');
@@ -572,6 +631,7 @@
                 }
             }
 
+
             function handleFileUpload(event) {
                 const file = event.target.files[0];
                 if (!file) return;
@@ -583,136 +643,242 @@
                 reader.readAsText(file);
             }
 
-            function getWordWithRomaji(row) {
-                let mainJapanese = (row.Kanji && row.Kanji.trim() !== "") ? row.Kanji : row.Hiragana;
-                let romaji = row.Romaji || '';
-                return `${mainJapanese} (${romaji})`;
-            }
+
+
+            // function generateQuestion() {
+            //     if (quizPool.length < 1) return null;
+
+            //     // Detect Quiz Type
+            //     const kanjiQuiz = isKanjiQuiz(csvData);
+            //     const sentenceQuiz = isSentenceQuiz(csvData);
+
+            //     // Pick Correct Answer from the FILTERED POOL (quizPool)
+            //     const correctIndex = Math.floor(Math.random() * quizPool.length);
+            //     const correctRow = quizPool[correctIndex];
+
+            //     let questionInfo = {};
+            //     const numberOfDistractors = (kanjiQuiz || sentenceQuiz) ? 3 : 3;
+
+            //     // --- NEW: Sentence Quiz Logic ---
+            //     if (sentenceQuiz) {
+            //         questionInfo.questionText = 'Select the correct Reading and Meaning for this sentence:';
+            //         // Display the Japanese sentence
+            //         questionInfo.context = correctRow['Japanese sentence'] || correctRow['Japanese Sentence'];
+
+            //         // Correct Answer format: Romaji - Meaning
+            //         const correctAnswerString = `${correctRow.Romaji} - ${correctRow.Meaning}`;
+            //         questionInfo.correctAnswer = correctAnswerString;
+            //         questionInfo.answers = [correctAnswerString];
+            //     }
+            //     // --- Existing Kanji Logic ---
+            //     else if (kanjiQuiz) {
+            //         questionInfo.questionText = 'Select the correct reading (Romaji) and Meaning for this Kanji:';
+            //         questionInfo.context = `Kanji: ${correctRow.Kanji}\nSentence: ${correctRow['Japanese Sentence']}`;
+            //         const correctAnswerString = `${correctRow.Romaji} - ${correctRow.Meaning}`;
+            //         questionInfo.correctAnswer = correctAnswerString;
+            //         questionInfo.answers = [correctAnswerString];
+            //     }
+            //     // --- Existing Vocab Logic ---
+            //     else {
+            //         const questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
+            //         questionInfo.questionText = questionType.question;
+            //         questionInfo.correctAnswer = correctRow[questionType.answerKey];
+            //         questionInfo.answers = [questionInfo.correctAnswer];
+
+            //         let context = '';
+            //         if (questionType.type === 'hiragana') context = `Romaji: ${correctRow.Romaji}\nMeaning: ${correctRow.Meaning}`;
+            //         else if (questionType.type === 'romaji') context = `Hiragana: ${correctRow.Hiragana}\nMeaning: ${correctRow.Meaning}`;
+            //         else context = `Hiragana: ${correctRow.Hiragana}\nRomaji: ${correctRow.Romaji}`;
+
+            //         questionInfo.context = context;
+            //     }
+
+            //     // --- Generate Distractors (Randomized from FULL csvData) ---
+            //     // Note: Distractors come from the entire file, not just the selected chapter, to make it harder.
+            //     const usedAnswers = new Set([questionInfo.correctAnswer]);
+
+            //     while (questionInfo.answers.length < numberOfDistractors + 1) {
+            //         const randomIndex = Math.floor(Math.random() * csvData.length);
+            //         const randomRow = csvData[randomIndex];
+
+            //         let wrongAnswerString;
+
+            //         if (sentenceQuiz || kanjiQuiz) {
+            //             wrongAnswerString = `${randomRow.Romaji} - ${randomRow.Meaning}`;
+            //         } else {
+            //             // For vocab, try to match the question type's answer key if possible, 
+            //             // or just fallback to simple random logic (simplified here)
+            //             // To keep logic simple and consistent with your old code:
+            //             // We need to know the question type key used above. 
+            //             // Since we didn't store it for vocab in this scope, we re-derive or simplify.
+            //             // For safety in this specific "replace" block, let's just grab the same field as correct answer if valid
+            //             // Or roughly estimate based on content.
+            //             // BETTER APPROACH for Vocab: 
+            //             if (!sentenceQuiz && !kanjiQuiz) {
+            //                 // We re-check keys to find a mismatching string
+            //                 const possibleKeys = ['Hiragana', 'Romaji', 'Meaning'];
+            //                 // Try to find which key holds the correct answer to pick a distractor of same type
+            //                 const key = possibleKeys.find(k => correctRow[k] === questionInfo.correctAnswer);
+            //                 wrongAnswerString = randomRow[key || 'Meaning'];
+            //             }
+            //         }
+
+            //         if (!usedAnswers.has(wrongAnswerString)) {
+            //             questionInfo.answers.push(wrongAnswerString);
+            //             usedAnswers.add(wrongAnswerString);
+            //         }
+
+            //         // Safety break
+            //         if (usedAnswers.size >= csvData.length && questionInfo.answers.length < numberOfDistractors + 1) break;
+            //         if (questionInfo.answers.length >= 20) break; // Infinite loop guard
+            //     }
+
+            //     questionInfo.answers.sort(() => Math.random() - 0.5);
+
+            //     return {
+            //         questionText: questionInfo.questionText,
+            //         context: questionInfo.context,
+            //         answers: questionInfo.answers,
+            //         correctAnswer: questionInfo.correctAnswer,
+            //         correctRow: correctRow
+            //     };
+            // }
 
             function generateQuestion() {
                 if (quizPool.length < 1) return null;
 
-                const correctRow = quizPool[questionCount];
                 const kanjiQuiz = isKanjiQuiz(csvData);
                 const sentenceQuiz = isSentenceQuiz(csvData);
+                const correctRow = quizPool[questionCount];
 
                 let questionInfo = {
                     questionText: '',
                     context: '',
-                    isSplitLayout: false,
                     answers: [],
                     correctAnswer: '',
-                    // Used for split layout column structures
-                    readingsPool: [],
-                    meaningsPool: [],
                     correctReading: '',
-                    correctMeaning: ''
+                    correctMeaning: '',
+                    readingAnswers: [],
+                    meaningAnswers: []
                 };
 
-                // --- CONDITION A: SPLIT TWO-COLUMN LAYOUT MODE (jlpt_n4_n5_hiragana_final.csv) ---
+                // --- CASE 1: Sentence Quiz (The Split Dual-Column Logic) ---
                 if (sentenceQuiz) {
-                    questionInfo.isSplitLayout = true;
-                    questionInfo.questionText = 'Select the matching Reading and Meaning for this expression:';
-                    questionInfo.context = correctRow['Japanese sentence'] || correctRow['Japanese Sentence'] || '';
+                    questionInfo.questionText = 'Select the correct Reading and Meaning:';
+                    questionInfo.context = correctRow['Japanese sentence'] || correctRow['Japanese Sentence'];
+                    questionInfo.correctReading = correctRow.Romaji;
+                    questionInfo.correctMeaning = correctRow.Meaning;
 
-                    questionInfo.correctReading = correctRow.Romaji || '';
-                    questionInfo.correctMeaning = correctRow.Meaning || '';
+                    let readingOptions = [correctRow.Romaji];
+                    let meaningOptions = [correctRow.Meaning];
 
-                    let rPool = [questionInfo.correctReading];
-                    let mPool = [questionInfo.correctMeaning];
-
-                    let safetyBreak = 0;
-                    while (rPool.length < Math.min(4, csvData.length) && safetyBreak < 500) {
-                        safetyBreak++;
-                        const randomRow = csvData[Math.floor(Math.random() * csvData.length)];
-                        let rWrong = randomRow.Romaji || '';
-                        let mWrong = randomRow.Meaning || '';
-                        if (rWrong && !rPool.includes(rWrong)) rPool.push(rWrong);
-                        if (mWrong && !mPool.includes(mWrong)) mPool.push(mWrong);
+                    while (readingOptions.length < 6) {
+                        let rand = csvData[Math.floor(Math.random() * csvData.length)];
+                        if (!readingOptions.includes(rand.Romaji)) readingOptions.push(rand.Romaji);
+                        if (!meaningOptions.includes(rand.Meaning)) meaningOptions.push(rand.Meaning);
                     }
 
-                    rPool.sort(() => Math.random() - 0.5);
-                    mPool.sort(() => Math.random() - 0.5);
+                    questionInfo.readingAnswers = readingOptions.sort(() => Math.random() - 0.5);
+                    questionInfo.meaningAnswers = meaningOptions.sort(() => Math.random() - 0.5);
 
-                    questionInfo.readingsPool = rPool;
-                    questionInfo.meaningsPool = mPool;
+                    return questionInfo; // Exit early for sentence quiz
                 }
-                // --- CONDITION B: COMBINED KANJI MULTIPLE CHOICE MODE (n5 kanji.csv) ---
+
+                // --- CASE 2: Kanji Quiz ---
                 else if (kanjiQuiz) {
                     questionInfo.questionText = 'Select the correct reading (Romaji) and Meaning for this Kanji:';
-                    let textSentence = correctRow['Japanese Sentence'] || correctRow['Japanese sentence'] || '';
-                    questionInfo.context = `Kanji: ${correctRow.Kanji}\nSentence: ${textSentence}`;
+                    questionInfo.context = `Kanji: ${correctRow.Kanji}\nSentence: ${correctRow['Japanese Sentence']}`;
+                    questionInfo.correctAnswer = `${correctRow.Romaji} - ${correctRow.Meaning}`;
+                    questionInfo.answers = [questionInfo.correctAnswer];
+                }
 
-                    let romajiString = correctRow.Romaji || '';
-                    let meaningString = correctRow.Meaning || '';
-                    questionInfo.correctAnswer = `${romajiString} - ${meaningString}`;
+                // --- CASE 3: Standard Vocab Quiz ---
+                else {
+                    const questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
+                    questionInfo.questionText = questionType.question;
+                    questionInfo.correctAnswer = correctRow[questionType.answerKey];
                     questionInfo.answers = [questionInfo.correctAnswer];
 
-                    let safetyBreak = 0;
-                    while (questionInfo.answers.length < Math.min(4, csvData.length) && safetyBreak < 500) {
-                        safetyBreak++;
-                        const randomRow = csvData[Math.floor(Math.random() * csvData.length)];
-                        let rString = randomRow.Romaji || '';
-                        let mString = randomRow.Meaning || '';
-                        let wrongAnswer = `${rString} - ${mString}`;
-                        if (wrongAnswer && !questionInfo.answers.includes(wrongAnswer)) {
-                            questionInfo.answers.push(wrongAnswer);
-                        }
-                    }
-                    questionInfo.answers.sort(() => Math.random() - 0.5);
+                    if (questionType.type === 'hiragana')
+                        questionInfo.context = `Romaji: ${correctRow.Romaji}\nMeaning: ${correctRow.Meaning}`;
+                    else if (questionType.type === 'romaji')
+                        questionInfo.context = `Hiragana: ${correctRow.Hiragana}\nMeaning: ${correctRow.Meaning}`;
+                    else
+                        questionInfo.context = `Hiragana: ${correctRow.Hiragana}\nRomaji: ${correctRow.Romaji}`;
                 }
-                // --- CONDITION C: VOCABULARY MODE ---
-                else {
-                    const isType1 = Math.random() < 0.5;
-                    questionInfo.questionText = 'Select the correct choice:';
 
-                    if (isType1) {
-                        let hiraPart = correctRow.Hiragana || '';
-                        let kanjiPart = (correctRow.Kanji && correctRow.Kanji.trim() !== "") ? ` (${correctRow.Kanji})` : "";
-                        let romajiPart = correctRow.Romaji ? ` / ${correctRow.Romaji}` : "";
-                        let combinedWord = `${hiraPart}${kanjiPart}${romajiPart}`;
+                // --- Generate Distractors for Kanji and Vocab only ---
+                while (questionInfo.answers.length < 4) {
+                    const randomRow = csvData[Math.floor(Math.random() * csvData.length)];
+                    let wrongAnswer;
 
-                        questionInfo.context = `What is the meaning of "${combinedWord}"?`;
-                        questionInfo.correctAnswer = correctRow.Meaning;
-                        questionInfo.answers = [questionInfo.correctAnswer];
-
-                        let safetyBreak = 0;
-                        while (questionInfo.answers.length < Math.min(4, csvData.length) && safetyBreak < 500) {
-                            safetyBreak++;
-                            const randomRow = csvData[Math.floor(Math.random() * csvData.length)];
-                            let wrongAnswer = randomRow.Meaning;
-                            if (wrongAnswer && !questionInfo.answers.includes(wrongAnswer)) {
-                                questionInfo.answers.push(wrongAnswer);
-                            }
-                        }
+                    if (kanjiQuiz) {
+                        wrongAnswer = `${randomRow.Romaji} - ${randomRow.Meaning}`;
                     } else {
-                        let meaningStr = correctRow.Meaning || '';
-                        questionInfo.context = `Which word matches the meaning: "${meaningStr}"?`;
-                        questionInfo.correctAnswer = getWordWithRomaji(correctRow);
-                        questionInfo.answers = [questionInfo.correctAnswer];
-
-                        let safetyBreak = 0;
-                        while (questionInfo.answers.length < Math.min(4, csvData.length) && safetyBreak < 500) {
-                            safetyBreak++;
-                            const randomRow = csvData[Math.floor(Math.random() * csvData.length)];
-                            let wrongAnswer = getWordWithRomaji(randomRow);
-                            if (wrongAnswer && !questionInfo.answers.includes(wrongAnswer)) {
-                                questionInfo.answers.push(wrongAnswer);
-                            }
-                        }
+                        const possibleKeys = ['Hiragana', 'Romaji', 'Meaning'];
+                        let key = possibleKeys.find(k => correctRow[k] === questionInfo.correctAnswer) || 'Meaning';
+                        wrongAnswer = randomRow[key];
                     }
-                    questionInfo.answers.sort(() => Math.random() - 0.5);
+
+                    if (wrongAnswer && !questionInfo.answers.includes(wrongAnswer)) {
+                        questionInfo.answers.push(wrongAnswer);
+                    }
                 }
 
+                questionInfo.answers.sort(() => Math.random() - 0.5);
                 return questionInfo;
             }
+            // function startQuiz() {
+            //     // 1. Apply Filters if it's a sentence quiz
+            //     if (isSentenceQuiz(csvData)) {
+            //         const checkboxes = document.querySelectorAll('.filter-checkbox:checked');
+            //         const selectedKeys = new Set(Array.from(checkboxes).map(cb => cb.value));
+
+            //         if (selectedKeys.size === 0) {
+            //             alert('Please select at least one chapter/section to study!');
+            //             return;
+            //         }
+
+            //         quizPool = csvData.filter(row => {
+            //             const sec = row.section ? row.section.trim() : '';
+            //             const chap = row.chapter ? row.chapter.trim() : '';
+            //             const key = `${sec}|${chap}`;
+            //             return selectedKeys.has(key);
+            //         });
+            //     } else {
+            //         quizPool = [...csvData]; // Use everything for standard quizzes
+            //     }
+
+            //     if (quizPool.length < 4) {
+            //         alert(`Not enough questions available in selected sections (Found: ${quizPool.length}). Select more sections or upload a larger file.`);
+            //         return;
+            //     }
+
+            //     // 2. Set Question Counts based on quizPool size
+            //     const questionCountSelect = document.getElementById('questionCount');
+            //     const selectedCount = questionCountSelect.value;
+
+            //     if (selectedCount === 'all') {
+            //         totalQuestions = quizPool.length;
+            //     } else {
+            //         totalQuestions = Math.min(parseInt(selectedCount), quizPool.length);
+            //     }
+
+            //     isQuizStarted = true;
+            //     questionCount = 0;
+            //     score = 0;
+            //     quizComplete = false;
+
+            //     document.getElementById('quizStatus').classList.add('hidden');
+            //     document.getElementById('quizComplete').classList.add('hidden');
+            //     document.getElementById('questionCard').classList.remove('hidden');
+
+            //     nextQuestion();
+            // }
 
             function startQuiz() {
-                if (csvData.length === 0) return;
-                const headers = Object.keys(csvData[0]);
-                const hasFilters = headers.includes('section') || headers.includes('chapter');
-
-                if (hasFilters) {
+                // 1. Apply Filters if it's a sentence quiz
+                if (isSentenceQuiz(csvData)) {
                     const checkboxes = document.querySelectorAll('.filter-checkbox:checked');
                     const selectedKeys = new Set(Array.from(checkboxes).map(cb => cb.value));
 
@@ -728,16 +894,18 @@
                         return selectedKeys.has(key);
                     });
                 } else {
-                    quizPool = [...csvData];
+                    quizPool = [...csvData]; // Use everything for standard quizzes
                 }
 
-                if (quizPool.length < 1) {
-                    alert(`Not enough questions available.`);
+                if (quizPool.length < 4) {
+                    alert(`Not enough questions available (Found: ${quizPool.length}).`);
                     return;
                 }
 
+                // === NEW: Shuffle the pool so the order is randomized ===
                 shuffleArray(quizPool);
 
+                // 2. Set Question Counts
                 const questionCountSelect = document.getElementById('questionCount');
                 const selectedCount = questionCountSelect.value;
 
@@ -745,6 +913,7 @@
                     totalQuestions = quizPool.length;
                 } else {
                     totalQuestions = Math.min(parseInt(selectedCount), quizPool.length);
+                    // Reduce the pool to the exact number of questions we need
                     quizPool = quizPool.slice(0, totalQuestions);
                 }
 
@@ -759,6 +928,9 @@
 
                 nextQuestion();
             }
+
+            let selectedReading = null;
+            let selectedMeaning = null;
 
             function nextQuestion() {
                 currentQuestion = generateQuestion();
@@ -775,101 +947,87 @@
                 const container = document.getElementById('answersContainer');
                 container.innerHTML = '';
 
-                // Render Split Two-Column Layout
-                if (currentQuestion.isSplitLayout) {
-                    const dualGrid = document.createElement('div');
-                    dualGrid.className = 'dual-grid-container';
+                if (isSentenceQuiz(csvData)) {
+                    // Create Two Columns
+                    const dualContainer = document.createElement('div');
+                    dualContainer.className = 'dual-grid-container';
 
-                    // Left Column (Readings)
-                    const leftCol = document.createElement('div');
-                    const leftTitle = document.createElement('div');
-                    leftTitle.className = 'column-title';
-                    leftTitle.textContent = 'Readings (Romaji)';
-                    leftCol.appendChild(leftTitle);
-
-                    currentQuestion.readingsPool.forEach(reading => {
+                    // Reading Column
+                    const col1 = document.createElement('div');
+                    col1.innerHTML = '<div class="column-title">Reading</div>';
+                    currentQuestion.readingAnswers.forEach(ans => {
                         const btn = document.createElement('button');
-                        btn.className = 'answer-btn part-reading-btn';
+                        btn.className = 'answer-btn';
+                        btn.style.width = '100%';
                         btn.style.marginBottom = '10px';
-                        btn.textContent = reading;
-                        btn.onclick = () => selectSplitPart(reading, btn, 'reading');
-                        leftCol.appendChild(btn);
+                        btn.textContent = ans;
+                        btn.onclick = () => handleDualSelect(ans, btn, 'reading');
+                        col1.appendChild(btn);
                     });
 
-                    // Right Column (Meanings)
-                    const rightCol = document.createElement('div');
-                    const rightTitle = document.createElement('div');
-                    rightTitle.className = 'column-title';
-                    rightTitle.textContent = 'Meanings';
-                    rightCol.appendChild(rightTitle);
-
-                    currentQuestion.meaningsPool.forEach(meaning => {
+                    // Meaning Column
+                    const col2 = document.createElement('div');
+                    col2.innerHTML = '<div class="column-title">Meaning</div>';
+                    currentQuestion.meaningAnswers.forEach(ans => {
                         const btn = document.createElement('button');
-                        btn.className = 'answer-btn part-meaning-btn';
+                        btn.className = 'answer-btn';
+                        btn.style.width = '100%';
                         btn.style.marginBottom = '10px';
-                        btn.textContent = meaning;
-                        btn.onclick = () => selectSplitPart(meaning, btn, 'meaning');
-                        rightCol.appendChild(btn);
+                        btn.textContent = ans;
+                        btn.onclick = () => handleDualSelect(ans, btn, 'meaning');
+                        col2.appendChild(btn);
                     });
 
-                    dualGrid.appendChild(leftCol);
-                    dualGrid.appendChild(rightCol);
-                    container.appendChild(dualGrid);
-                }
-                // Render Standard Multiple-Choice Layout
-                else {
-                    const normalGrid = document.createElement('div');
-                    normalGrid.className = 'answers-grid';
-
+                    dualContainer.appendChild(col1);
+                    dualContainer.appendChild(col2);
+                    container.appendChild(dualContainer);
+                } else {
+                    // ... Keep your original standard vocab logic here ...
                     currentQuestion.answers.forEach(answer => {
                         const button = document.createElement('button');
                         button.className = 'answer-btn';
                         button.textContent = answer;
                         button.onclick = () => handleAnswerSelect(answer, button);
-                        normalGrid.appendChild(button);
+                        container.appendChild(button);
                     });
-                    container.appendChild(normalGrid);
                 }
 
                 document.getElementById('nextButtonContainer').classList.add('hidden');
             }
 
-            function selectSplitPart(value, buttonElement, type) {
+            // Replace your handleDualSelect function with this one
+            function handleDualSelect(value, btn, type) {
                 if (showResult) return;
 
-                if (type === 'reading') {
-                    document.querySelectorAll('.part-reading-btn').forEach(b => b.classList.remove('selected-part'));
-                    selectedReading = value;
-                    buttonElement.classList.add('selected-part');
-                } else {
-                    document.querySelectorAll('.part-meaning-btn').forEach(b => b.classList.remove('selected-part'));
-                    selectedMeaning = value;
-                    buttonElement.classList.add('selected-part');
-                }
+                // 1. Highlight the selection in the current column
+                const parent = btn.parentElement;
+                parent.querySelectorAll('.answer-btn').forEach(b => b.classList.remove('selected-part'));
+                btn.classList.add('selected-part');
 
-                // Evaluate answer once one option from each column has been clicked
+                if (type === 'reading') selectedReading = value;
+                if (type === 'meaning') selectedMeaning = value;
+
+                // 2. Only check accuracy if BOTH sides are picked
                 if (selectedReading && selectedMeaning) {
                     showResult = true;
-                    const isCorrect = (selectedReading === currentQuestion.correctReading && selectedMeaning === currentQuestion.correctMeaning);
+                    const isCorrect = (selectedReading === currentQuestion.correctReading &&
+                        selectedMeaning === currentQuestion.correctMeaning);
 
                     if (isCorrect) {
                         score++;
+                        // Highlight both selections as green
+                        document.querySelectorAll('.selected-part').forEach(b => b.classList.add('correct'));
+                    } else {
+                        // Highlight incorrect ones red and show the right ones in green
+                        document.querySelectorAll('.answer-btn').forEach(b => {
+                            if (b.textContent === currentQuestion.correctReading ||
+                                b.textContent === currentQuestion.correctMeaning) {
+                                b.classList.add('correct');
+                            } else if (b.classList.contains('selected-part')) {
+                                b.classList.add('incorrect');
+                            }
+                        });
                     }
-
-                    document.querySelectorAll('.answer-btn').forEach(btn => {
-                        btn.classList.add('disabled');
-                        btn.onclick = null;
-
-                        const text = btn.textContent;
-                        if (text === currentQuestion.correctReading || text === currentQuestion.correctMeaning) {
-                            btn.classList.remove('selected-part');
-                            btn.classList.add('correct');
-                        } else if (btn.classList.contains('selected-part')) {
-                            btn.classList.remove('selected-part');
-                            btn.classList.add('incorrect');
-                        }
-                    });
-
                     document.getElementById('nextButtonContainer').classList.remove('hidden');
                 }
             }
@@ -888,7 +1046,8 @@
                     buttonElement.classList.add('incorrect');
                     buttonElement.innerHTML = '❌ ' + answer;
 
-                    document.querySelectorAll('.answer-btn').forEach(btn => {
+                    const buttons = document.querySelectorAll('.answer-btn');
+                    buttons.forEach(btn => {
                         if (btn.textContent === currentQuestion.correctAnswer) {
                             btn.classList.add('correct');
                             btn.innerHTML = '✅ ' + btn.textContent;
@@ -896,7 +1055,8 @@
                     });
                 }
 
-                document.querySelectorAll('.answer-btn').forEach(btn => {
+                const buttons = document.querySelectorAll('.answer-btn');
+                buttons.forEach(btn => {
                     btn.classList.add('disabled');
                     btn.onclick = null;
                 });
@@ -919,10 +1079,30 @@
                 isQuizStarted = false;
 
                 document.getElementById('questionCard').classList.add('hidden');
+
                 document.getElementById('quizComplete').classList.remove('hidden');
                 document.getElementById('finalScore').textContent = `${score}/${totalQuestions}`;
                 document.getElementById('percentageText').textContent = `You scored ${Math.round((score / totalQuestions) * 100)}%!`;
             }
+
+            // function resetQuiz() {
+            //     csvData = [];
+            //     isQuizStarted = false;
+            //     quizComplete = false;
+            //     currentQuestion = null;
+            //     selectedAnswer = null;
+            //     showResult = false;
+            //     score = 0;
+            //     questionCount = 0;
+
+            //     document.getElementById('loadingSection').classList.remove('hidden');
+            //     document.getElementById('quizStatus').classList.add('hidden');
+            //     document.getElementById('quizComplete').classList.add('hidden');
+            //     document.getElementById('questionCard').classList.add('hidden');
+
+            //     document.getElementById('fileInput').value = '';
+            //     document.getElementById('csvFileSelect').value = '';
+            // }
 
             function resetQuiz() {
                 csvData = [];
@@ -939,8 +1119,8 @@
                 document.getElementById('quizStatus').classList.add('hidden');
                 document.getElementById('quizComplete').classList.add('hidden');
                 document.getElementById('questionCard').classList.add('hidden');
-                document.getElementById('filterContainer').classList.add('hidden');
-                document.getElementById('checkboxGrid').innerHTML = '';
+                document.getElementById('filterContainer').classList.add('hidden'); // Hide filters
+                document.getElementById('checkboxGrid').innerHTML = ''; // Clear checkboxes
 
                 document.getElementById('fileInput').value = '';
                 document.getElementById('csvFileSelect').value = '';
